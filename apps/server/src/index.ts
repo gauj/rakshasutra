@@ -508,6 +508,7 @@ app.post("/ingest/owntracks", async (c) => {
   }
   if (!ok) {
     ingestFailures.hit(ip);
+    console.log("[ingest] refused: wrong or missing login");
     return c.json({ error: "unauthorized" }, 401, { "WWW-Authenticate": 'Basic realm="RakshaSutra"' });
   }
   const raw = await c.req.text();
@@ -531,6 +532,7 @@ app.post("/ingest/owntracks", async (c) => {
       device.lastTrigger = ping.trigger;
     }
   }
+  console.log(`[ingest] ${accepted} of ${msgs.length} message(s) accepted`);
   device.count += accepted;
   if (accepted) schedulePersist();
   return c.json([]); // OwnTracks expects an array back

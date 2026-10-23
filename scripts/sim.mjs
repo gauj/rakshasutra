@@ -43,6 +43,7 @@ function dist(a, b) {
 }
 // Uses the real Home and School from data/family.json when they are set (that file is git-ignored), else a fictional neighbourhood.
 function realPlace(name) {
+  if (process.env.SIM_FICTIONAL === "1") return undefined; // for videos and screenshots: never draw a real home
   try {
     const f = JSON.parse(readFileSync(path.join(root, "data", "family.json"), "utf8"));
     const z = f.zones.find((x) => x.name === name);
