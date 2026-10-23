@@ -16,7 +16,7 @@
 ![Hono](https://img.shields.io/badge/Hono-API-E36002?style=flat-square&logo=hono&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Leaflet-map-199900?style=flat-square&logo=leaflet&logoColor=white)
 ![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-tiles-7EBC6F?style=flat-square&logo=openstreetmap&logoColor=white)
-![Vitest](https://img.shields.io/badge/Vitest-60%20tests-6E9F18?style=flat-square&logo=vitest&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-97%20tests-6E9F18?style=flat-square&logo=vitest&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-cba6f7?style=flat-square)
 
 **[Quick start](#-quick-start)** · **[How it works](#-how-it-works)** · **[Real use](docs/REAL_USE.md)** · **[Safety engine](#-safety-engine)** · **[Privacy](#-privacy-and-security)** · **[Authors](#-authors)**
@@ -54,7 +54,7 @@ Requirements: **Node.js 20 or newer**.
 
 ```bash
 npm install
-npm test                                  # 60 unit tests
+npm test                                  # 75 unit tests
 npm run build -w @rakshasutra/web
 npm run start -w @rakshasutra/server      # the whole app on http://localhost:8787
 ```
@@ -248,7 +248,7 @@ Alerting nearby strangers who own a Bee: there is no supported API for it, and i
 
 | | |
 |---|---|
-| ✅ **Built and tested** | The engine, plan parsing from real Bee transcripts, the live Bee bridge, real-mode intake and setup, the simulator, the parent app. Three suites: **60** unit tests, **37** demo API checks, **28** real-mode checks (`npm test`, `npm run e2e` against a demo-mode server, `npm run e2e:real`). |
+| ✅ **Built and tested** | The engine, plan parsing from real Bee transcripts, the live Bee bridge, real-mode intake and setup, the simulator, the parent app. Three suites: **75** unit tests, **37** demo API checks, **28** real-mode checks (`npm test`, `npm run e2e` against a demo-mode server, `npm run e2e:real`). |
 | 🧪 **Not yet verified** | A run with a real iPhone moving through OwnTracks, and the Bedrock narrator against a real AWS account. |
 | 🗺️ **Next** | A CDK stack (API Gateway, Lambda, DynamoDB, SNS, Bedrock) and a native iPhone app. |
 

@@ -72,7 +72,7 @@ We have not yet verified a run with a real iPhone moving. The demo child's feed 
 - **Real mode with private data.** A family code, a separate send-only phone login, rate limiting, strict validation of everything the phone sends, a Content-Security-Policy, local-only binding, and all family data in a git-ignored folder.
 - **A simulator you can trust.** It plays the phone through the same login-protected intake as a real iPhone, along routes fetched once from public routing services.
 - **AWS.** Amazon Bedrock (Converse) can write the reports and answer questions, and Amazon SNS can text the parent's own phone. Both are optional and fall back safely. An AWS CDK stack defines the DynamoDB table, SNS topic, Bedrock narrator Lambda and API. See `docs/AWS.md`.
-- **Tested.** 60 unit tests, 37 demo API checks and 28 real-mode checks.
+- **Tested.** 75 unit tests, 13 AWS mock tests, 9 CDK stack tests, 37 demo API checks and 28 real-mode checks.
 
 ### Challenges
 
@@ -114,7 +114,7 @@ The repository's first commit is 15 Oct 2026, inside the submission period (31 A
 ## Testing instructions for judges
 
 1. `git clone https://github.com/gauj/rakshasutra && cd rakshasutra && npm install`
-2. `npm test` (60 tests).
+2. `npm test` (75 tests).
 3. `npm run build -w @rakshasutra/web` then `npm run start -w @rakshasutra/server`, open http://localhost:8787, open **Demo controls**, choose **The unexpected delay**, and press **Start scenario**. No account or key is needed; the story plays scripted notes and the app labels them.
 4. To see live Bee data you need your own Bee login (README, "Connect your own Bee"). The demo video shows our live run.
 

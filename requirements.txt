@@ -14,7 +14,7 @@ npm >= 10             # developed on 11.9.0
 
 # --- packages/core (@rakshasutra/core) ---
 typescript ^5.6.0     # dev
-vitest ^5.0.5         # dev, 60 tests
+vitest ^5.0.5         # dev, 75 tests
 
 # --- apps/server (@rakshasutra/server) ---
 hono ^4.6.0
@@ -54,7 +54,7 @@ typescript ^5.6.0     # dev
 # FORCE_DEMO=1         run the demo even if a private data/ folder exists
 
 # --- Commands ---
-# npm test             run the 60 unit tests
+# npm test             run the 75 unit tests
 # npm run setup:real   create the private family data and the family code
 # npm run start:real   build the app and start it in real mode
 # npm run sim:serve    private simulator server on :8788;  npm run sim -- <scenario>
