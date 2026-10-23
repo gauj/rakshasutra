@@ -98,14 +98,10 @@ export function Beera({ mood = "happy", size = 96, className = "" }: { mood?: Be
         </g>
       </g>
 
-      {/* the scanner: a dot that keeps travelling around the shield's outline, with a soft tail, as if checking where the child is */}
-      <g className="scan" fill="#fff">
-        {[0, 0.16, 0.32, 0.5].map((lag, i) => (
-          <circle key={lag} r={4.6 - i * 0.9} opacity={1 - i * 0.26}>
-            <animateMotion dur={look.scan} begin={`-${lag * parseFloat(look.scan)}s`} repeatCount="indefinite" path={SHIELD} />
-          </circle>
-        ))}
-      </g>
+      {/* the scanner: one dot that keeps travelling around the shield's outline, as if checking where the child is */}
+      <circle className="scan" r="4.8" fill="#fff" stroke={look.ring} strokeWidth="1.6">
+        <animateMotion dur={look.scan} repeatCount="indefinite" path={SHIELD} />
+      </circle>
 
       {mood === "cheer" && [sparkle(14, 20, 8, "a"), sparkle(108, 16, 6, "b"), sparkle(106, 102, 5, "c")]}
     </svg>
