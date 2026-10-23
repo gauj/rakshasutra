@@ -14,12 +14,14 @@ const LABEL: Record<BeeraMood, string> = {
 };
 
 // Each state has its own colour, pulse speed and symbol, so it reads at a glance even when tiny.
-const LOOK: Record<BeeraMood, { from: string; to: string; ring: string; pulse: string }> = {
-  happy: { from: "#56c596", to: "#2f9e72", ring: "#56c596", pulse: "3.4s" },
-  cheer: { from: "#56c596", to: "#2f9e72", ring: "#a6e3a1", pulse: "1.8s" },
-  listening: { from: "#b992f7", to: "#8b5fe0", ring: "#cba6f7", pulse: "1.6s" },
-  curious: { from: "#ffb84d", to: "#ef8a14", ring: "#ffb84d", pulse: "1.3s" },
-  worried: { from: "#ff6b81", to: "#d62a43", ring: "#ff6b81", pulse: "0.75s" },
+const SHIELD = "M60 10 L100 24 V58 C100 84 84 102 60 112 C36 102 20 84 20 58 V24 Z";
+
+const LOOK: Record<BeeraMood, { from: string; to: string; ring: string; pulse: string; scan: string }> = {
+  happy: { from: "#56c596", to: "#2f9e72", ring: "#56c596", pulse: "3.4s", scan: "7s" },
+  cheer: { from: "#56c596", to: "#2f9e72", ring: "#a6e3a1", pulse: "1.8s", scan: "5s" },
+  listening: { from: "#b992f7", to: "#8b5fe0", ring: "#cba6f7", pulse: "1.6s", scan: "5s" },
+  curious: { from: "#ffb84d", to: "#ef8a14", ring: "#ffb84d", pulse: "1.3s", scan: "3.6s" },
+  worried: { from: "#ff6b81", to: "#d62a43", ring: "#ff6b81", pulse: "0.75s", scan: "2.2s" },
 };
 
 /** A four-point sparkle, used on good news. */
@@ -55,36 +57,19 @@ export function Beera({ mood = "happy", size = 96, className = "" }: { mood?: Be
         </linearGradient>
       </defs>
 
-      {/* the scanner: a dot that keeps circling the shield, as if checking where the child is */}
-      <circle cx="60" cy="62" r="55" fill="none" stroke={look.ring} strokeOpacity="0.22" strokeWidth="1.6" strokeDasharray="2 5" />
-      <g className="orbit">
-        <circle cx="60" cy="7" r="4.4" fill={look.ring} />
-        <circle cx="60" cy="7" r="8" fill={look.ring} opacity="0.25" />
-      </g>
-
       {/* pulsing rings behind the shield */}
       <g className="rings" fill="none" stroke={look.ring} strokeWidth="3">
-        <path className="ring r1" d="M60 10 L100 24 V58 C100 84 84 102 60 112 C36 102 20 84 20 58 V24 Z" />
-        {(siren || mood === "cheer") && <path className="ring r2" d="M60 10 L100 24 V58 C100 84 84 102 60 112 C36 102 20 84 20 58 V24 Z" />}
+        <path className="ring r1" d={SHIELD} />
+        {(siren || mood === "cheer") && <path className="ring r2" d={SHIELD} />}
       </g>
 
       {/* the shield */}
       <g className="body">
-        <path d="M60 10 L100 24 V58 C100 84 84 102 60 112 C36 102 20 84 20 58 V24 Z" fill={`url(#${grad})`} stroke="#ffffff" strokeOpacity="0.9" strokeWidth="4" strokeLinejoin="round" />
+        <path d={SHIELD} fill={`url(#${grad})`} stroke="#ffffff" strokeOpacity="0.9" strokeWidth="4" strokeLinejoin="round" />
         <path d="M34 28 L60 19 L86 28" fill="none" stroke="#fff" strokeOpacity="0.28" strokeWidth="4" strokeLinecap="round" />
 
-        {/* eyes: it is awake, it blinks, it glances about, and it opens wide when worried */}
-        <g className="eyes">
-          <ellipse cx="46" cy="38" rx={mood === "worried" ? 7.4 : 6.4} ry={mood === "worried" ? 8.6 : 7.4} fill="#fff" />
-          <ellipse cx="74" cy="38" rx={mood === "worried" ? 7.4 : 6.4} ry={mood === "worried" ? 8.6 : 7.4} fill="#fff" />
-          <g className="pupils" fill="#1b1a22">
-            <circle cx="46" cy="39" r={mood === "worried" ? 2.8 : 3.4} />
-            <circle cx="74" cy="39" r={mood === "worried" ? 2.8 : 3.4} />
-          </g>
-        </g>
-
         {/* the symbol */}
-        <g transform="translate(12 24) scale(0.8)">
+        <g>
         {(mood === "happy" || mood === "cheer") && <path className="tick" d="M40 60 L55 75 L82 44" fill="none" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />}
 
         {mood === "listening" && (
@@ -111,6 +96,15 @@ export function Beera({ mood = "happy", size = 96, className = "" }: { mood?: Be
           </g>
         )}
         </g>
+      </g>
+
+      {/* the scanner: a dot that keeps travelling around the shield's outline, with a soft tail, as if checking where the child is */}
+      <g className="scan" fill="#fff">
+        {[0, 0.16, 0.32, 0.5].map((lag, i) => (
+          <circle key={lag} r={4.6 - i * 0.9} opacity={1 - i * 0.26}>
+            <animateMotion dur={look.scan} begin={`-${lag * parseFloat(look.scan)}s`} repeatCount="indefinite" path={SHIELD} />
+          </circle>
+        ))}
       </g>
 
       {mood === "cheer" && [sparkle(14, 20, 8, "a"), sparkle(108, 16, 6, "b"), sparkle(106, 102, 5, "c")]}
