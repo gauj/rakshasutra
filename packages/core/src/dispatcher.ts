@@ -7,7 +7,9 @@ import { Alert, Tier } from "./types.js";
 const EMERGENCY_NUMBERS = new Set(["911", "112", "999", "100", "101", "102", "108", "1098", "988", "18008435678"]);
 export function isEmergencyNumber(raw: string): boolean {
   const digits = raw.replace(/[^\d]/g, "").replace(/^1(?=\d{10}$)/, "");
-  return EMERGENCY_NUMBERS.has(digits) || EMERGENCY_NUMBERS.has("1" + digits);
+  // Also catch a country code or trunk digit stuck in front ("+1 911", "1-911", "0911", "+91 112").
+  const bare = digits.replace(/^(?:91|0|1)(?=\d{3,4}$)/, "");
+  return EMERGENCY_NUMBERS.has(digits) || EMERGENCY_NUMBERS.has("1" + digits) || EMERGENCY_NUMBERS.has(bare);
 }
 
 export interface OutboundMessage {
