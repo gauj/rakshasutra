@@ -421,3 +421,33 @@ body:has(.sheet-layer) .demo-btn, body:has(.sheet-layer) .drawer { display: none
 
 /* With the time-lapse bar along the bottom, the demo-controls button moves up out of its way. */
 @media (min-width: 900px) { .demo-btn { bottom: auto; top: 76px; } .drawer { bottom: auto; top: 116px; } }
+
+/* Status shield (Beera): pulsing rings, a breathing shield, flashing siren and moving sound bars. */
+.beera.shield { animation: none; overflow: visible; }
+.beera.shield .body { transform-box: fill-box; transform-origin: center; animation: breathe calc(var(--pulse, 3s) * 1.2) ease-in-out infinite; }
+.beera.shield .ring { transform-box: fill-box; transform-origin: center; opacity: 0; animation: ringout var(--pulse, 3s) ease-out infinite; }
+.beera.shield .ring.r2 { animation-delay: calc(var(--pulse, 3s) / 2); }
+.beera.shield.worried .body { animation-name: throb; }
+.beera.shield .dome { animation: domeflash calc(var(--pulse, 1s) * 0.7) ease-in-out infinite alternate; }
+.beera.shield .rays { animation: raysflash calc(var(--pulse, 1s) * 0.7) ease-in-out infinite alternate; }
+.beera.shield .bar { transform-box: fill-box; transform-origin: center; animation: bars 0.9s ease-in-out infinite alternate; }
+.beera.shield .bar.b2 { animation-delay: 0.15s; } .beera.shield .bar.b3 { animation-delay: 0.3s; }
+.beera.shield .tick { stroke-dasharray: 80; stroke-dashoffset: 0; animation: drawtick 0.7s ease-out both; }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+@keyframes throb { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.1); } 60% { transform: scale(1.05); } }
+@keyframes ringout { 0% { transform: scale(0.95); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes domeflash { from { opacity: 1; } to { opacity: 0.55; } }
+@keyframes raysflash { from { opacity: 1; } to { opacity: 0.2; } }
+@keyframes bars { from { transform: scaleY(0.55); } to { transform: scaleY(1.15); } }
+@keyframes drawtick { from { stroke-dashoffset: 80; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .beera.shield .body, .beera.shield .ring, .beera.shield .dome, .beera.shield .rays, .beera.shield .bar, .beera.shield .tick { animation: none; } .beera.shield .ring { opacity: 0; } }
+
+/* Shield character: it scans, blinks, glances about, and breathes. It scans and blinks faster the more serious things get. */
+.beera.shield .orbit { transform-box: view-box; transform-origin: 60px 62px; animation: orbit calc(var(--pulse, 3s) * 2.4) linear infinite; }
+.beera.shield .eyes { transform-box: fill-box; transform-origin: center; animation: blink 5.2s infinite; }
+.beera.shield.worried .eyes { animation-duration: 2.6s; }
+.beera.shield .pupils { animation: glance 7s ease-in-out infinite; }
+.beera.shield.worried .pupils { animation-duration: 1.8s; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes glance { 0%, 18%, 100% { transform: translate(0, 0); } 26%, 44% { transform: translate(-2.4px, 0); } 54%, 72% { transform: translate(2.4px, -0.6px); } 82% { transform: translate(0, 1px); } }
+@media (prefers-reduced-motion: reduce) { .beera.shield .orbit, .beera.shield .eyes, .beera.shield .pupils { animation: none; } }

@@ -134,7 +134,7 @@ export function Landing({ st, open, view, onCloseBee }: Props) {
               <Beera mood={says.mood} size={24} className="face-bee" />
             </span>
           ) : (
-            <Beera mood={says.mood} size={46} />
+            <Beera mood={says.mood} size={56} />
           )}
           <div className="speech">
             <b>{says.line}</b>
