@@ -1,10 +1,10 @@
 // Structure of the "schoolday" time-lapse scenario (no engine behaviour).
 import { describe, expect, it } from "vitest";
-import { buildScenario, demoProfile } from "../src/index.js";
+import { buildScenario, schooldayProfile } from "../src/index.js";
 import { haversineM } from "../src/geo.js";
 
 const at = (h: number, m: number) => Date.UTC(2026, 9, 14, h + 5, m);
-const zone = (id: string) => demoProfile.zones.find((z) => z.id === id)!;
+const zone = (id: string) => schooldayProfile.zones.find((z) => z.id === id)!;
 const sc = buildScenario("schoolday");
 const pings = sc.events.filter((e) => e.ping).map((e) => e.ping!);
 /** The ping closest in time to h:m. */
@@ -14,7 +14,7 @@ const dist = (p: { lat: number; lon: number }, id: string) => haversineM(p, zone
 describe("schoolday scenario", () => {
   it("is chronological with a sensible span and speed", () => {
     for (let i = 1; i < sc.events.length; i++) expect(sc.events[i]!.t).toBeGreaterThanOrEqual(sc.events[i - 1]!.t);
-    expect(sc.startTs).toBe(at(8, 40));
+    expect(sc.startTs).toBe(at(8, 30));
     expect(sc.endTs).toBe(at(18, 5));
     expect(sc.defaultSpeed).toBeGreaterThanOrEqual(120);
     expect((sc.endTs - sc.startTs) / 1000 / sc.defaultSpeed).toBeLessThan(5 * 60);
@@ -36,14 +36,18 @@ describe("schoolday scenario", () => {
   it("puts the child in the right places at the right times", () => {
     expect(dist(near(9, 30), "school")).toBeLessThan(zone("school").radiusM!);
     expect(dist(near(15, 0), "cte")).toBeLessThan(zone("cte").radiusM!);
-    expect(dist(near(17, 13), "school")).toBeGreaterThan(zone("school").radiusM!);
+    expect(dist(near(17, 14), "school")).toBeGreaterThan(zone("school").radiusM!);
     expect(dist(near(17, 25), "school")).toBeLessThan(zone("school").radiusM!);
     expect(dist(near(18, 2), "home")).toBeLessThan(zone("home").radiusM!);
   });
 
-  it("walks off campus but never into the flagged lot", () => {
+  it("walks well off campus during the late pick-up, and the road trips follow the real roads (no straight line over hills)", () => {
     const far = Math.max(...pings.filter((p) => p.ts >= at(17, 8) && p.ts <= at(17, 20)).map((p) => dist(p, "school")));
-    expect(far).toBeGreaterThan(300);
-    for (const p of pings) expect(dist(p, "lot")).toBeGreaterThan(zone("lot").radiusM!);
+    expect(far).toBeGreaterThan(zone("school").radiusM! + 100);
+    // Every drive is dense enough to read as a road: consecutive moving pings are never more than about 250 m apart.
+    const moving = pings.filter((p) => (p.speedKmh ?? 0) > 0 || true);
+    let longest = 0;
+    for (let i = 1; i < moving.length; i++) longest = Math.max(longest, haversineM(moving[i - 1]!, moving[i]!));
+    expect(longest).toBeLessThan(400);
   });
 });

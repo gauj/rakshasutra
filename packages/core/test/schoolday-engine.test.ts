@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildScenario, DEFAULT_THRESHOLDS, DEMO_CHILD_ID, demoPlaces, demoProfile, GuardianEngine } from "../src/index.js";
+import { buildScenario, DEFAULT_THRESHOLDS, DEMO_CHILD_ID, demoPlaces, schooldayProfile, GuardianEngine } from "../src/index.js";
 
 // Plays the whole "schoolday" story through the real engine, the way the server's demo runner does,
 // and checks what the parent would be told, and when.
 function play() {
   const sc = buildScenario("schoolday");
   const e = new GuardianEngine(demoPlaces, DEFAULT_THRESHOLDS);
-  e.register(demoProfile);
+  e.register(schooldayProfile);
   const seen: { t: number; ids: string[] }[] = [];
   const arrivals: { t: number; zone: string }[] = [];
   const plans: ReturnType<GuardianEngine["plansOf"]> = [];

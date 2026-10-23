@@ -1,3 +1,4 @@
+import { ROUTE_CTE_TO_SCHOOL, ROUTE_HOME_TO_SCHOOL, ROUTE_SCHOOL_TO_CTE, ROUTE_SCHOOL_TO_HOME, SCHOOLDAY_PLACES } from "./routes.js";
 import { bearingDeg, destination, haversineM, LatLon } from "./geo.js";
 import { StaticPlaces } from "./sos.js";
 import { ChildProfile, Ping } from "./types.js";
@@ -42,6 +43,19 @@ export const demoProfile: ChildProfile = {
       level: "elevated",
       reason: "Parent-flagged: no foot traffic, reported incidents (demo data).",
     },
+  ],
+};
+
+/**
+ * The "schoolday" story is set in real places: Liberty High School and the Frisco ISD CTE Center (both public), with a
+ * generic home in Prosper. Real roads come from routes.ts. Nothing here is any family's actual address.
+ */
+export const schooldayProfile: ChildProfile = {
+  ...demoProfile,
+  zones: [
+    { id: "home", name: "Home", kind: "safe", ...SCHOOLDAY_PLACES.home, radiusM: 120, allowPickup: true },
+    { id: "school", name: "Liberty HS", kind: "safe", ...SCHOOLDAY_PLACES.school, radiusM: 250, allowPickup: true },
+    { id: "cte", name: "Liberty HS CTE Center", kind: "safe", ...SCHOOLDAY_PLACES.cte, radiusM: 200, allowPickup: true },
   ],
 };
 
@@ -124,6 +138,35 @@ class Builder {
       this.ping(hr(), { exact: v > 5 });
     }
   }
+  /** Travel along a real road or footpath at v m/s, a ping every `every` s, ending exactly at its last point. */
+  follow(line: LatLon[], v: number, every: number, hr: () => number | undefined) {
+    const step = v * every;
+    let seg = 0;
+    let into = 0; // metres travelled along the current segment
+    let carry = step;
+    this.pos = line[0]!;
+    this.ping(hr(), { exact: true }); // a fix at the start of the road, so a long wait before it is not read as a jump
+    while (seg < line.length - 1) {
+      const a = line[seg]!;
+      const b = line[seg + 1]!;
+      const len = haversineM(a, b);
+      if (into + carry >= len) {
+        carry -= len - into;
+        into = 0;
+        seg++;
+        continue;
+      }
+      into += carry;
+      carry = step;
+      this.pos = destination(a, bearingDeg(a, b), into);
+      this.t += every * 1000;
+      this.battery -= 0.01;
+      this.ping(hr(), { exact: true });
+    }
+    this.pos = line[line.length - 1]!;
+    this.t += every * 1000;
+    this.ping(hr(), { exact: true });
+  }
   dwell(mins: number, every: number, hr: () => number | undefined) {
     for (let s = 0; s < mins * 60; s += every) {
       this.t += every * 1000;
@@ -165,55 +208,58 @@ export function buildScenario(name: ScenarioName, childId = DEMO_CHILD_ID): Scen
   }
 
   if (name === "schoolday") {
-    // A full school day as a time-lapse: two guardian notes, a bus trip, and one walk off campus.
-    const startTs = at(8, 40);
+    // A full school day as a time-lapse, on real roads: two guardian notes, a bus trip, one walk off campus, a late pick-up.
+    // Dwell exactly where the roads begin and end, so there is no jump between a stop and its road.
+    const P = { home: ROUTE_HOME_TO_SCHOOL[0]!, school: ROUTE_HOME_TO_SCHOOL[ROUTE_HOME_TO_SCHOOL.length - 1]!, cte: ROUTE_SCHOOL_TO_CTE[ROUTE_SCHOOL_TO_CTE.length - 1]! };
+    const startTs = at(8, 30);
     const endTs = at(18, 5);
-    const b = new Builder(startTs, HOME, childId);
-    /** Stay near `center` until the virtual clock reaches h:m, pinging every `every` s with a little wandering. */
-    const stay = (center: LatLon, h: number, m: number, every: number, wander: number) => {
-      const end = at(h, m);
-      while (b.t + every * 1000 <= end) {
+    const b = new Builder(startTs, P.home, childId);
+    const V = 13; // about 47 km/h on the road
+    const lengthM = (line: LatLon[]) => line.slice(1).reduce((sum, p, i) => sum + haversineM(line[i]!, p), 0);
+    /** Stay near `center` until the virtual clock reaches `endMs`, pinging every `every` s with a little wandering. */
+    const stayUntil = (center: LatLon, endMs: number, every: number, wander: number) => {
+      while (b.t + every * 1000 <= endMs) {
         b.t += every * 1000;
         b.battery -= 0.25;
         b.pos = wander > 0 ? destination(center, r() * 360, r() * wander) : center;
         b.ping(calm());
       }
-      b.t = end;
+      b.t = endMs;
       b.pos = center;
     };
-    /** Straight-line trip to `to` in `secs` (no road data), pinging every `every` s. */
-    const travel = (to: LatLon, secs: number, every: number, hr: () => number) => {
-      b.move(bearingDeg(b.pos, to), haversineM(b.pos, to) / secs, secs, every, hr);
-      b.pos = to;
+    /** Leave in time to arrive at h:m by road. */
+    const drive = (line: LatLon[], h: number, m: number) => {
+      const secs = lengthM(line) / V;
+      stayUntil(line[0]!, at(h, m) - secs * 1000, 120, 6);
+      b.follow(line, V, 12, ride);
     };
     const ride = () => 88 + Math.round(r() * 8);
     const stroll = () => 96 + Math.round(r() * 10);
 
-    stay(HOME, 8, 56, 120, 6); // breakfast, backpack, out the door
-    travel(SCHOOL, 90, 10, ride); // drop-off, about 12 m/s
-    stay(SCHOOL, 10, 0, 300, 40);
+    drive(ROUTE_HOME_TO_SCHOOL, 8, 58); // drop-off
+    stayUntil(P.school, at(10, 0), 300, 40);
     b.note("Please keep an eye on Adam today and make sure he is safe. He goes to the CTE center at 3 p.m.");
     b.confirm();
-    stay(SCHOOL, 14, 56, 300, 90); // classes, lunch and recess inside the campus; then the bus is loaded
-    travel(CTE, 240, 12, ride); // the bus, 10 m/s
-    stay(CTE, 16, 46, 300, 50);
-    travel(SCHOOL, 240, 12, ride); // the bus back
-    stay(SCHOOL, 17, 0, 300, 30);
+    stayUntil(P.school, at(14, 40), 300, 90); // classes, lunch and recess inside the campus
+    drive(ROUTE_SCHOOL_TO_CTE, 14, 59); // the bus
+    stayUntil(P.cte, at(16, 30), 300, 50);
+    drive(ROUTE_CTE_TO_SCHOOL, 16, 50); // the bus back
+    stayUntil(P.school, at(17, 0), 300, 30);
     b.note("I am going to be a little late, so he should be home by 6 p.m. I will pick him up around 5:30. Please keep him safe at school and make sure he is not going around.");
     b.confirm();
-    stay(SCHOOL, 17, 8, 120, 20);
-    // The tension beat: he walks about 350 m off campus (north-west, clear of the flagged lot), lingers, and comes back.
-    const away = destination(SCHOOL, 310, 350);
-    b.move(310, 1.4, 250, 15, stroll);
+    stayUntil(P.school, at(17, 8), 120, 20);
+    // The tension beat: he walks about 420 m off campus (west), lingers, and comes back.
+    const away = destination(P.school, 270, 420);
+    b.pos = P.school;
+    b.move(270, 1.4, 300, 15, stroll);
     b.pos = away;
     b.dwell(2, 60, stroll);
     b.pos = away;
-    travel(SCHOOL, 250, 15, stroll);
-    stay(SCHOOL, 17, 30, 120, 20);
-    stay(SCHOOL, 17, 56, 120, 0); // parent pick-up at the gate, signing him out
-    b.t = at(17, 56) + 30_000;
-    travel(HOME, 90, 10, ride); // drive home, about 12 m/s
-    stay(HOME, 18, 5, 120, 8);
+    b.move(90, 1.4, 300, 15, stroll);
+    b.pos = P.school;
+    stayUntil(P.school, at(17, 36), 120, 20); // the parent arrives around 5:30 and signs him out
+    drive(ROUTE_SCHOOL_TO_HOME, 17, 58); // the drive home
+    stayUntil(P.home, at(18, 5), 120, 8);
 
     b.t = startTs;
     b.tickUntil(endTs, 30);
@@ -222,10 +268,10 @@ export function buildScenario(name: ScenarioName, childId = DEMO_CHILD_ID): Scen
     const chapters: Chapter[] = [
       { t: at(9, 0), label: "At school" },
       { t: at(10, 0), label: "Parent asks Bee to keep watch" },
-      { t: at(14, 45), label: "Leaves for CTE" },
+      { t: at(14, 50), label: "Leaves for CTE" },
       { t: at(15, 0), label: "Reaches CTE safely" },
       { t: at(17, 0), label: "Late pick-up, keep him at school" },
-      { t: at(17, 11), label: "Leaves school: heads-up" },
+      { t: at(17, 13), label: "Leaves school: heads-up" },
       { t: at(17, 58), label: "Home, safe" },
     ];
     return { name, title: "A school day with Bee: kept safe from 9 to 6", startTs, endTs, defaultSpeed: 240, events, scripted: true, chapters };

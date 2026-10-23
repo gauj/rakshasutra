@@ -31,6 +31,7 @@ import {
   ownTracksToPing,
   type Plan,
   type Scenario,
+  schooldayProfile,
   type ScenarioEvent,
   type ScenarioName,
   StaticPlaces,
@@ -223,6 +224,9 @@ async function confirmPlan(planId: string, quiet = false): Promise<Plan | undefi
 
 /** Begin a demo scenario from a clean slate. */
 function startRun(name: ScenarioName, speed?: number) {
+  // The school-day story is set in real places (a public school, a public CTE center, a generic home); the other stories use the fictional map.
+  profile = name === "schoolday" ? schooldayProfile : demoProfile;
+  engine.updateProfile(profile);
   engine.reset(CHILD_ID);
   dispatcher.reset();
   assembler.clear();
@@ -425,6 +429,8 @@ app.post("/api/demo/seek", async (c) => {
 app.post("/api/demo/stop", (c) => {
   if (REAL) return c.json(demoOnly(), 409);
   run = undefined;
+  profile = demoProfile;
+  engine.updateProfile(profile);
   engine.reset(CHILD_ID);
   dispatcher.reset();
   return c.json({ ok: true });
