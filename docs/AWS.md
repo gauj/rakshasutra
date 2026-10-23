@@ -12,8 +12,8 @@ This page says what AWS is used for, how to turn it on, and exactly how much of 
 | CDK stack written (`infra/`, DynamoDB + SNS + Lambda + HTTP API) | Yes |
 | CDK stack tested offline with `aws-cdk-lib/assertions` (9 tests) | Yes |
 | `cdk synth` succeeds | Yes |
-| Deployed to a real AWS account | **No** (no AWS credentials were available) |
-| Live Bedrock call made | **No** |
+| Deployed to a real AWS account | **No** |
+| Live Bedrock call made | **Attempted, not successful.** On 23 Oct 2026, with a brand-new account, a least-privilege IAM user and `scripts/bedrock-check.mjs`, AWS accepted the credentials and region but answered "Operation not allowed" (first "account is currently being verified"), for both `amazon.nova-lite-v1:0` and `us.amazon.nova-lite-v1:0`. The app fell back to its template, as designed. This is an AWS account-activation block, not a code error. |
 | Live SNS message sent | **No** |
 | Narrator Lambda executed (even locally) | **No**. Only its CDK packaging was synthesised; its code has no tests. |
 | Kiro Crew used in development | **No**. The AWS Builder challenge suggests it; it was not used. |

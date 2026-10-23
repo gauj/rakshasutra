@@ -138,7 +138,7 @@ On Windows most of the effort went into the missing binary and the undocumented 
 Yes. A wearable that hears the plan is exactly the context a safety app is missing. With a documented stream envelope, ordering guarantees and a Windows binary in the package, it would be a short path.
 
 **AWS Builder: which services and how?**
-Amazon Bedrock (Converse API) writes the parent report and answers free-form questions strictly from supplied facts, falling back to a template. Amazon SNS texts the parent's own phone (opt-in), and refuses emergency numbers. An AWS CDK stack defines a DynamoDB alert-history table, an encrypted SNS topic, a least-privilege Bedrock narrator Lambda and an API Gateway endpoint. Unit tests mock the SDKs and the stack synthesises offline. It has not been deployed to a live account, and no live Bedrock call has been made. Details: `docs/AWS.md`.
+Amazon Bedrock (Converse API) writes the parent report and answers free-form questions strictly from supplied facts, falling back to a template. Amazon SNS texts the parent's own phone (opt-in), and refuses emergency numbers. An AWS CDK stack defines a DynamoDB alert-history table, an encrypted SNS topic, a least-privilege Bedrock narrator Lambda and an API Gateway endpoint. Unit tests mock the SDKs and the stack synthesises offline. It has not been deployed. A live Bedrock call was attempted with a new account and a least-privilege IAM user (scripts/bedrock-check.mjs), but AWS answered "Operation not allowed" while the account was still being activated, so the template fallback ran. Details: `docs/AWS.md`.
 
 **Optional feature requests**
 
