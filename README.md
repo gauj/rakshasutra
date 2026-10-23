@@ -149,9 +149,9 @@ flowchart LR
 | `packages/core` | Types, geo maths, the anomaly engine, plan parser, SOS and report builders, OwnTracks translation, the demo simulator. No I/O, fully unit tested |
 | `apps/server` | Hono API, the Bee bridge, real-mode setup and intake, alert channels, demo runner, Bedrock narrator |
 | `apps/web` | React + Leaflet parent app (Catppuccin colours, expanding sheets, hash routes) |
-| `scripts` | `e2e.mjs` (demo API), `e2e-real.mjs` (real mode), `sim.mjs` (phone and road simulator), `publish-public.mjs` |
-| `docs` | `requirements.md`, `design.md`, `REAL_USE.md`, `DEMO_SCRIPT.md`, `FRICTION_LOG.md` |
-| `infra` | Reserved for the AWS CDK stack (not built yet) |
+| `scripts` | `demo.mjs` (one-command demo), `e2e.mjs` (demo API), `e2e-real.mjs` (real mode), `sim.mjs` (phone and road simulator), `bedrock-check.mjs` (live Bedrock check) |
+| `docs` | `AWS.md` (AWS stack and honest status), `REAL_USE.md` (real phone setup), `FRICTION_LOG.md` (Bee product feedback) |
+| `infra` | AWS CDK stack (DynamoDB, SNS, Lambda narrator), with tests; see `docs/AWS.md` |
 
 </details>
 

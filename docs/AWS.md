@@ -107,4 +107,4 @@ Nothing is always-on. DynamoDB is pay-per-request, Lambda and HTTP API bill per 
 
 - The server does not yet store alerts in DynamoDB or publish to the topic; the stack is the target design.
 - The narrator Lambda code is untested. Its behaviour mirrors `narrator.ts` but is not covered by the mocks.
-- `design.md` section 9 lists further ideas (EventBridge, Cognito, Location Service) that are not built.
+- Further ideas (EventBridge, Cognito, Location Service) are not built.
