@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+# Downloaded Bee CLI binary and archive (fetch from the bee-cli releases page)
+tools/
+# Reference deck contains a minor's personal details
+*.pptx
+.claude/
+
+# The real family's profile, access codes and saved day. Never commit these.
+data/
+*.local.json
+data-sim/

@@ -1,0 +1,1 @@
+{ "name": "RakshaSutra", "short_name": "RakshaSutra", "start_url": "/", "display": "standalone", "background_color": "#11111b", "theme_color": "#11111b", "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }] }

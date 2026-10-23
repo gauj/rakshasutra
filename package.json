@@ -1,0 +1,22 @@
+{
+  "name": "rakshasutra",
+  "private": true,
+  "version": "0.1.0",
+  "description": "RakshaSutra - proactive child protection on Bee (Wearable AI) + AWS",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm -w @rakshasutra/core run test",
+    "typecheck": "npm -w @rakshasutra/core run typecheck && npm -w @rakshasutra/server run typecheck && npm -w @rakshasutra/web run typecheck",
+    "dev:server": "npm -w @rakshasutra/server run dev",
+    "dev:web": "npm -w @rakshasutra/web run dev",
+    "e2e": "node scripts/e2e.mjs",
+    "setup:real": "npm -w @rakshasutra/server run setup --",
+    "start:real": "npm -w @rakshasutra/web run build && npm -w @rakshasutra/server run start",
+    "e2e:real": "node scripts/e2e-real.mjs",
+    "sim:serve": "node scripts/sim.mjs serve",
+    "sim": "node scripts/sim.mjs"
+  }
+}
