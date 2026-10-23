@@ -16,7 +16,7 @@ export const DEMO_CHILD_ID = "child-adam";
 export const demoProfile: ChildProfile = {
   id: DEMO_CHILD_ID,
   name: "Adam",
-  nameAliases: ["Atom", "Adan", "Adams", "Edam"], // how speech-to-text may mishear the name
+  nameAliases: ["Atom", "Adan", "Adams", "Edam", "Badam", "Bad Adam", "Hey Adam"], // how speech-to-text may mishear the name
   age: 11,
   region: "US",
   tzOffsetMin: -300,

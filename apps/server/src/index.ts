@@ -51,7 +51,8 @@ const PORT = Number(process.env.PORT ?? 8787);
 // If data/family.json exists, this server tracks a real child through their iPhone. Otherwise it is the demo.
 let family: FamilyConfig | undefined = process.env.FORCE_DEMO === "1" ? undefined : loadFamily();
 const REAL = !!family;
-let profile: ChildProfile = family ? profileFromFamily(family) : demoProfile;
+// The demo opens on the school-day places (Prosper and Frisco), so the first screen already looks real.
+let profile: ChildProfile = family ? profileFromFamily(family) : schooldayProfile;
 const CHILD_ID = profile.id;
 const PARENT_ID = profile.parentIds[0]!;
 const PARENT_TOKEN = process.env.PARENT_TOKEN ?? family?.secrets.parentToken ?? "demo-parent";
@@ -117,7 +118,7 @@ const nowMs = () => (run ? virtualNow(run) : Date.now());
 const assembler = new NoteAssembler();
 let settle: ReturnType<typeof setTimeout> | undefined;
 // How long the guardian must pause before a spoken note is treated as finished.
-const SETTLE_MS = 4000;
+const SETTLE_MS = 6000;
 
 // What the guardian just said about the child, for the "Bee" page. Only speech that is about the
 // child is ever kept or shown: a Bee hears everything nearby, and the rest must never reach the screen.
@@ -429,7 +430,7 @@ app.post("/api/demo/seek", async (c) => {
 app.post("/api/demo/stop", (c) => {
   if (REAL) return c.json(demoOnly(), 409);
   run = undefined;
-  profile = demoProfile;
+  profile = schooldayProfile;
   engine.updateProfile(profile);
   engine.reset(CHILD_ID);
   dispatcher.reset();

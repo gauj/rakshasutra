@@ -19,6 +19,7 @@ Paste each answer into the matching field. The three age, jurisdiction and emplo
 | Contribution URL | `https://github.com/gauj/bee-utterance-assembler` |
 | Project Repository URL | `https://github.com/gauj/bee-utterance-assembler` |
 | GitHub Username | `gauj` |
+| Demo video | `https://youtu.be/BaXYOOYGe1A` |
 | Project Testing Link | `https://github.com/gauj/rakshasutra#-quick-start` |
 | Level of learning | **Significant** (your honest choice) |
 | Gained AI value for your career? | **Yes** (your honest choice) |

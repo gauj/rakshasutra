@@ -25,7 +25,7 @@ typescript, nodejs, react, vite, hono, leaflet, openstreetmap, bee, bee-cli, own
 **Try it out links**
 
 - Code: https://github.com/gauj/rakshasutra
-- Video: TODO (YouTube or Vimeo link, under 3 minutes)
+- Video: https://youtu.be/BaXYOOYGe1A
 
 ---
 
