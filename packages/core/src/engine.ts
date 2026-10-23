@@ -25,6 +25,8 @@ import {
 const HISTORY_MS = 24 * 3600_000;
 // A distress phrase keeps counting as a signal for 10 minutes.
 const VOICE_HOLD_MS = 10 * 60_000;
+/** How far outside a watched place the child may be before it counts as leaving (GPS wobble and a walk to the gate). */
+const WATCH_MARGIN_M = 60;
 
 /** Phrases that flag an utterance as distress. Only checked when the child's voice consent is on. */
 export const DISTRESS_PATTERNS: RegExp[] = [
@@ -78,6 +80,8 @@ export class GuardianEngine {
   readonly alerts: Alert[] = [];
   private seq = 0;
   private incSeq = 0;
+  /** Plans whose safe arrival has already been announced, so each is announced once. */
+  private announced = new Set<string>();
   private planSeq = 0;
 
   constructor(
@@ -118,6 +122,8 @@ export class GuardianEngine {
     this.seq = s.seq;
     this.incSeq = s.incSeq;
     this.planSeq = s.planSeq;
+    // Plans already completed before the restart were announced then: do not announce them again.
+    for (const st of this.children.values()) for (const p of st.plans) if (p.status === "completed") this.announced.add(p.id);
     for (const [id, st] of this.children) {
       st.openAlert = [...this.alerts].reverse().find((a) => a.childId === id && a.status === "open");
     }
@@ -154,8 +160,19 @@ export class GuardianEngine {
   proposeFromNote(childId: string, text: string, ts: number, source: Plan["source"]): Plan | undefined {
     const st = this.children.get(childId);
     if (!st) return undefined;
-    const parsed = parseScheduleNote(text, { profile: st.profile, ts, current: this.activePlan(childId) });
+    const lastPing = st.pings[st.pings.length - 1];
+    const currentZoneId = lastPing ? st.profile.zones.find((z) => z.kind === "safe" && zoneContains(z, lastPing))?.id : undefined;
+    const parsed = parseScheduleNote(text, { profile: st.profile, ts, current: this.activePlan(childId), currentZoneId });
     return parsed ? this.proposePlan({ ...parsed, source }) : undefined;
+  }
+
+  /** Plans that reached their place since the last call. The server turns each into one good-news message. */
+  newlyCompleted(childId: string): Plan[] {
+    const st = this.children.get(childId);
+    if (!st) return [];
+    const fresh = st.plans.filter((p) => p.status === "completed" && !this.announced.has(p.id));
+    for (const p of fresh) this.announced.add(p.id);
+    return fresh;
   }
 
   /** Make a proposed plan the one in force; any earlier confirmed plan is superseded. */
@@ -189,6 +206,7 @@ export class GuardianEngine {
     st.pings = [];
     st.flaggedVoice = [];
     st.plans = [];
+    this.announced.clear();
     st.suppress = undefined;
     st.openAlert = undefined;
     st.lastRaisedAt = undefined;
@@ -481,6 +499,23 @@ export class GuardianEngine {
       if (wasSafe) out.push(mk("SAFE_ZONE_EXIT_QUIET_HOURS", 3, "Left a safe place at night", "Moved out of a safe zone during quiet hours."));
     }
 
+    // "Keep watch": the guardian asked us to watch a place until a time. Leaving it early is worth a look, never a verdict.
+    const watched = st.plans.find((p) => p.status === "confirmed" && p.watch);
+    if (watched?.watch && fresh && now <= watched.watch.until) {
+      const wz = st.profile.zones.find((z) => z.id === watched.watch!.zoneId);
+      const outsideM = wz ? haversineM(wz, last) - wz.radiusM : 0;
+      if (wz && outsideM > WATCH_MARGIN_M) {
+        out.push(
+          mk(
+            "WATCH_BREACH",
+            3,
+            `Left ${wz.name} while you asked us to keep watch`,
+            `You asked us to keep watch at ${wz.name} until ${fmtClock(watched.watch.until, st.profile.tzOffsetMin)}. ${st.profile.name} is about ${Math.round(outsideM)} m outside it. Last update ${Math.round(age)} min ago. This does not confirm anything is wrong.`,
+          ),
+        );
+      }
+    }
+
     // Expected check-in from a confirmed plan (explainable: says what is expected and what is unknown).
     const plan = st.plans.find((p) => p.status === "confirmed");
     if (plan) {
@@ -488,6 +523,7 @@ export class GuardianEngine {
       const arrived = !!zone && zoneContains(zone, last);
       if (arrived && now >= plan.expectedAt - 90 * 60_000) {
         plan.status = "completed";
+        plan.completedAt = now;
       } else if (now >= plan.expectedAt + plan.graceMin * 60_000) {
         const lateMin = Math.round((now - plan.expectedAt) / 60000);
         const tz = st.profile.tzOffsetMin;

@@ -1,4 +1,4 @@
-// Plays Ayaan's iPhone (or Bee) for you, so the whole app can be demonstrated without anyone walking outside.
+// Plays Adam's iPhone (or Bee) for you, so the whole app can be demonstrated without anyone walking outside.
 // It starts its own private copy of the real-mode server (port 8788, data-sim/), and sends the same OwnTracks
 // reports an iPhone would, through the same login-protected intake. Your real setup in data/ is never touched.
 // It never contacts anyone: no push topic is set, and emergency numbers are display-only by design.
@@ -67,7 +67,7 @@ const ZONES = [
 // ---- the private server ----
 function prepare() {
   if (!existsSync(path.join(DIR, "family.json"))) {
-    const r = spawnSync(process.execPath, ["--import", "tsx", "apps/server/src/setup-real.ts", "--name", "Ayaan", "--age", "13", "--tz", "-300"], {
+    const r = spawnSync(process.execPath, ["--import", "tsx", "apps/server/src/setup-real.ts", "--name", "Adam", "--age", "13", "--tz", "-300"], {
       cwd: root,
       env: { ...process.env, DATA_DIR: DIR },
       encoding: "utf8",
@@ -82,7 +82,8 @@ function prepare() {
   f.contacts = [{ name: "Aunt Meera (demo)", phone: "+1 555 0101" }];
   f.rules = { disabled: [] }; // the simulator stands in for continuous reports, so every rule is on
   f.notify = {};
-  f.child.nameAliases = ["Ayan", "Ian", "Aayan", "Ayaan"]; // how Bee mishears his name
+  f.child.name = "Adam";
+  f.child.nameAliases = ["Atom", "Adan", "Adams", "Edam"]; // how Bee mishears his name
   writeFileSync(path.join(DIR, "family.json"), JSON.stringify(f, null, 2), { mode: 0o600 });
   rmSync(path.join(DIR, "state.json"), { force: true }); // each run starts from a clean day
   return f;
@@ -258,7 +259,7 @@ async function build(name) {
       s.follow(await route("car", HOME, SCHOOL));
       s.alongAll(13, 10); // the morning drop-off, along the real roads
       s.dwell(60, 10);
-      return { story: s, speed: 30, title: "You drop Ayaan at School along the real roads. Safe place to safe place, a pick-up point at both ends: nothing to worry about." };
+      return { story: s, speed: 30, title: "You drop Adam at School along the real roads. Safe place to safe place, a pick-up point at both ends: nothing to worry about." };
     }
     case "pickup": {
       const s = new Story(SCHOOL);
@@ -267,7 +268,7 @@ async function build(name) {
       s.follow(await route("car", SCHOOL, HOME));
       s.alongAll(13, 10); // the afternoon pick-up, along the real roads
       s.dwell(60, 10);
-      return { story: s, speed: 30, title: "You pick Ayaan up from School and drive him Home along the real roads. Nothing to worry about." };
+      return { story: s, speed: 30, title: "You pick Adam up from School and drive him Home along the real roads. Nothing to worry about." };
     }
     case "late": {
       const s = new Story(CTE);
@@ -278,7 +279,7 @@ async function build(name) {
       s.alongAll(1.3, 15); // walks off along the footpath, away from home
       s.dwell(60, 20);
       // The last report is 30 minutes old, so the later ride home (the arrive scenario) lines up after it.
-      return { story: s, speed: 15, endAgoMin: 30, title: "Ayaan leaves the CTE Center on foot and does not head home. A pick-up plan is then confirmed as already overdue.", plan: true };
+      return { story: s, speed: 15, endAgoMin: 30, title: "Adam leaves the CTE Center on foot and does not head home. A pick-up plan is then confirmed as already overdue.", plan: true };
     }
     case "arrive": {
       const out = await route("foot", CTE, wander);
@@ -290,7 +291,7 @@ async function build(name) {
       s.follow(await route("car", CTE, HOME));
       s.alongAll(13, 10); // you drive him home along the real roads
       s.dwell(30, 10);
-      return { story: s, speed: 40, title: "Ayaan walks back to the CTE Center, you pick him up and drive him Home. The overdue pick-up should resolve." };
+      return { story: s, speed: 40, title: "Adam walks back to the CTE Center, you pick him up and drive him Home. The overdue pick-up should resolve." };
     }
     case "wrong-place": {
       const s = new Story(SCHOOL);
@@ -299,7 +300,7 @@ async function build(name) {
       s.follow(await route("foot", SCHOOL, LOT));
       s.alongAll(1.4, 10); // walks along the footpath to the flagged lot
       s.dwell(40, 10);
-      return { story: s, speed: 40, title: "Ayaan walks from School to the parent-flagged Abandoned lot." };
+      return { story: s, speed: 40, title: "Adam walks from School to the parent-flagged Abandoned lot." };
     }
     case "sudden-stop": {
       const start = dest(SCHOOL, 90, 400);
@@ -312,13 +313,13 @@ async function build(name) {
       s.t += 2000;
       s.report(0, 0, "stationary", 0); // speed falls from 15 m/s to 0 in 2 seconds
       s.dwell(100, 10); // the phone just lies there
-      return { story: s, speed: 20, title: "Ayaan walks, then moves at vehicle speed away from a pick-up point, then stops abruptly and the phone lies still." };
+      return { story: s, speed: 20, title: "Adam walks, then moves at vehicle speed away from a pick-up point, then stops abruptly and the phone lies still." };
     }
     case "no-movement": {
       const s = new Story(PARK);
       s.report();
       s.dwell(200 * 60, 5 * 60); // nothing for 3+ hours, outside any safe place
-      return { story: s, speed: 0, title: "Ayaan's phone has not moved for 3+ hours, outside any safe place (reports back-dated, played instantly)." };
+      return { story: s, speed: 0, title: "Adam's phone has not moved for 3+ hours, outside any safe place (reports back-dated, played instantly)." };
     }
     case "signal-lost": {
       const s = new Story(CTE);
@@ -326,7 +327,7 @@ async function build(name) {
       s.follow(await route("foot", CTE, wander));
       s.alongAll(1.3, 30); // walks away from the CTE Center, then nothing
       s.dwell(60, 30);
-      return { story: s, speed: 0, endAgoMin: 200, title: "Ayaan's phone goes silent. The last report was 3+ hours ago, outside any safe place." };
+      return { story: s, speed: 0, endAgoMin: 200, title: "Adam's phone goes silent. The last report was 3+ hours ago, outside any safe place." };
     }
     default:
       return null;
@@ -405,7 +406,7 @@ async function playScenario(name) {
       const hh = d.getUTCHours();
       return `${((hh + 11) % 12) + 1}:${String(d.getUTCMinutes()).padStart(2, "0")} ${hh >= 12 ? "PM" : "AM"}`;
     };
-    const r = await fetch(B + "/api/notes", { method: "POST", headers: h.parent, body: JSON.stringify({ text: `Ayaan has CTE class. I will pick him up at ${clock(15)}.` }) });
+    const r = await fetch(B + "/api/notes", { method: "POST", headers: h.parent, body: JSON.stringify({ text: `Adam has CTE class. I will pick him up at ${clock(15)}.` }) });
     const note = await r.json();
     if (note?.id) await fetch(B + `/api/plans/${note.id}/confirm`, { method: "POST", headers: h.parent });
     console.log("\nA pick-up plan (due 15 minutes ago) was added and confirmed.");

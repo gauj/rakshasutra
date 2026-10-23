@@ -45,7 +45,7 @@ describe("everyday scenario", () => {
     const { engine, sc } = run("everyday");
     const r = buildReport(demoProfile, engine.pingsOf(DEMO_CHILD_ID), engine.alerts, sc.startTs, sc.endTs);
     expect(r.wellbeing).toBe("all-clear");
-    expect(r.stays.map((s) => s.place).join()).toContain("Smith Middle School");
+    expect(r.stays.map((s) => s.place).join()).toContain("Liberty HS");
     expect(r.hr!.max).toBeLessThan(180);
   });
 });
@@ -179,7 +179,7 @@ describe("schedule notes", () => {
   it("reads a pick-up time", () => {
     const e = new GuardianEngine(demoPlaces);
     e.register(demoProfile);
-    const p = e.proposeFromNote(DEMO_CHILD_ID, "Aarav has robotics practice today. Practice ends at 5 and I'll pick him up at 5:30.", ts, "bee");
+    const p = e.proposeFromNote(DEMO_CHILD_ID, "Adam has robotics practice today. Practice ends at 5 and I'll pick him up at 5:30.", ts, "bee");
     expect(p?.expectedAt).toBe(local(17, 30));
     expect(p?.status).toBe("proposed");
     expect(p?.title).toBe("Robotics practice");
@@ -188,7 +188,7 @@ describe("schedule notes", () => {
   it("reads a time with a space after the colon, as real Bee transcripts render it", () => {
     const e = new GuardianEngine(demoPlaces);
     e.register(demoProfile);
-    const p = e.proposeFromNote(DEMO_CHILD_ID, "Aarav has robotics practice, I will pick him up at 5: 30.", ts, "bee");
+    const p = e.proposeFromNote(DEMO_CHILD_ID, "Adam has robotics practice, I will pick him up at 5: 30.", ts, "bee");
     expect(p?.expectedAt).toBe(local(17, 30));
   });
 
@@ -205,7 +205,7 @@ describe("schedule notes", () => {
     e.register(demoProfile);
     const p = e.proposeFromNote(
       DEMO_CHILD_ID,
-      "Aarav's robotics practice is running late, I'll pick him up at six instead of 5: 30",
+      "Adam's robotics practice is running late, I'll pick him up at six instead of 5: 30",
       ts,
       "bee",
     );
@@ -216,7 +216,7 @@ describe("schedule notes", () => {
   it("shifts the active plan when told it is running late with no new time", () => {
     const e = new GuardianEngine(demoPlaces);
     e.register(demoProfile);
-    e.confirmPlan(e.proposeFromNote(DEMO_CHILD_ID, "Pick up Aarav at 5:30", ts, "bee")!.id);
+    e.confirmPlan(e.proposeFromNote(DEMO_CHILD_ID, "Pick up Adam at 5:30", ts, "bee")!.id);
     const p = e.proposeFromNote(DEMO_CHILD_ID, "Practice is running 20 minutes late", ts, "bee");
     expect(p?.expectedAt).toBe(local(17, 50));
     expect(p?.confidence).toBeLessThan(0.7);
@@ -231,7 +231,7 @@ describe("schedule notes", () => {
   it("proposals do nothing until the guardian confirms", () => {
     const e = new GuardianEngine(demoPlaces);
     e.register(demoProfile);
-    e.proposeFromNote(DEMO_CHILD_ID, "Pick up Aarav at 5:30", ts, "bee");
+    e.proposeFromNote(DEMO_CHILD_ID, "Pick up Adam at 5:30", ts, "bee");
     expect(e.activePlan(DEMO_CHILD_ID)).toBeUndefined();
   });
 });

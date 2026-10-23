@@ -17,7 +17,7 @@ export interface OutboundMessage {
   incidentId: string;
   childId: string;
   tier: Tier;
-  kind: "new" | "update" | "reminder";
+  kind: "new" | "update" | "reminder" | "info";
   subject: string;
   /** SMS-length text. */
   short: string;
@@ -112,6 +112,46 @@ export class AlertDispatcher {
       }
     } finally {
       this.busy = false;
+    }
+  }
+
+  /**
+   * Good news, such as "arrived safely, as planned". It goes to the app and to push only, never as an alarm,
+   * and carries no place or location in the push text.
+   */
+  async info(m: { id: string; subject: string; short: string; long: string; at: number }): Promise<void> {
+    const msg: OutboundMessage = {
+      alertId: `info-${m.id}`,
+      incidentId: `info-${m.id}`,
+      childId: "",
+      tier: "safe",
+      kind: "info",
+      subject: m.subject,
+      short: m.short,
+      long: m.long,
+      emergencyBrief: "",
+      at: m.at,
+    };
+    for (const c of this.channels.filter((x) => x.id === "app" || x.id === "push")) {
+      let res: ChannelResult;
+      try {
+        res = await c.send(msg);
+      } catch (e) {
+        res = { ok: false, detail: (e as Error).message };
+      }
+      this.records.push({
+        id: `delivery-${++this.seq}`,
+        alertId: msg.alertId,
+        incidentId: msg.incidentId,
+        channel: c.id,
+        channelLabel: c.label,
+        kind: "info",
+        tier: "safe",
+        at: m.at,
+        ok: res.ok,
+        detail: res.detail,
+        preview: m.short.slice(0, 160),
+      });
     }
   }
 

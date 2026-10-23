@@ -5,7 +5,7 @@ import { Page } from "./Page";
 import { SosCard } from "./SosCard";
 import { api, clock12, type State } from "./state";
 
-/** How is Aarav right now? The status sentence, any alert (explained), and the plan. */
+/** How is Adam right now? The status sentence, any alert (explained), and the plan. */
 export function CheckinPage({ st, open }: { st: State; open?: Alert }) {
   const tz = st.child.tzOffsetMin;
   const cleared = !!open && st.tier === "safe";

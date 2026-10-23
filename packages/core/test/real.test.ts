@@ -107,7 +107,7 @@ describe("engine with sparse real-phone data", () => {
     const e = fresh(["SILENCE"]);
     const seen: Alert[] = [];
     const feed = (r: ReturnType<typeof e.ingestPing>) => r?.newAlert && seen.push(r.newAlert);
-    e.confirmPlan(e.proposeFromNote(DEMO_CHILD_ID, "Aarav has robotics. I will pick him up at 5:30.", local(16, 30), "bee")!.id);
+    e.confirmPlan(e.proposeFromNote(DEMO_CHILD_ID, "Adam has robotics. I will pick him up at 5:30.", local(16, 30), "bee")!.id);
 
     feed(e.ingestPing(ping(local(16, 40), { lat: ROBOTICS.lat, lon: ROBOTICS.lon, regions: ["Robotics Center (demo)"], battery: 64, trigger: "c" })));
     feed(e.ingestPing(ping(local(17, 5), { lat: ROBOTICS.lat - 0.002, lon: ROBOTICS.lon, regions: [], battery: 62, trigger: "c" }))); // left the place
@@ -130,7 +130,7 @@ describe("engine with sparse real-phone data", () => {
   it("saves and restores the day across a restart", () => {
     const a = fresh();
     a.ingestPing(ping(local(17, 0), { lat: 29.97, lon: -95.69 }));
-    a.confirmPlan(a.proposeFromNote(DEMO_CHILD_ID, "Pick up Aarav at 5:30", local(16, 30), "bee")!.id);
+    a.confirmPlan(a.proposeFromNote(DEMO_CHILD_ID, "Pick up Adam at 5:30", local(16, 30), "bee")!.id);
     const saved = JSON.parse(JSON.stringify(a.exportState()));
     const b = fresh();
     b.importState(saved);

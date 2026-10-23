@@ -399,3 +399,25 @@ body:has(.sheet-layer) .demo-btn, body:has(.sheet-layer) .drawer { display: none
 .map .leaflet-control-zoom a { width: 40px; height: 44px; line-height: 44px; border-bottom: 0; border-right: 1px solid var(--hairline); }
 .map .leaflet-control-zoom a:last-child { border-right: 0; }
 .beera-card { min-height: 72px; box-sizing: border-box; }
+
+/* Beera: gentle extras for the softer redraw. */
+.beera .spark { transform-box: fill-box; transform-origin: center; animation: twinkle 1.4s ease-in-out infinite; }
+.beera .wave { animation: pulse 1.2s ease-in-out infinite; } .beera .wave.w2 { animation-delay: 0.25s; }
+@keyframes twinkle { 0%, 100% { transform: scale(0.8); opacity: 0.7; } 50% { transform: scale(1.15); opacity: 1; } }
+@keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* Demo time-lapse bar: play, pause, drag, jump to a key moment, change speed. Demo mode only. */
+.timelapse { position: fixed; z-index: 1500; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(920px, calc(100% - 28px)); display: grid; gap: 8px; padding: 10px 14px; border-radius: 20px; background: var(--material); backdrop-filter: saturate(180%) blur(20px); box-shadow: var(--shadow); }
+.timelapse.idle { width: auto; padding: 8px; }
+.tl-row { display: flex; align-items: center; gap: 12px; }
+.tl-play { width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 15px; flex: none; }
+.tl-clock { font-weight: 800; font-size: 20px; min-width: 84px; font-variant-numeric: tabular-nums; }
+.tl-slider { flex: 1; min-width: 80px; accent-color: var(--mauve); }
+.tl-speeds, .tl-chapters { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip-btn { border: 0; border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 12.5px; background: color-mix(in srgb, var(--overlay0) 18%, transparent); color: var(--text); cursor: pointer; }
+.chip-btn.on { background: var(--mauve); color: var(--on-accent, #11111b); }
+.chip-btn b { font-weight: 800; margin-right: 3px; }
+@media (max-width: 640px) { .tl-row { flex-wrap: wrap; } .tl-slider { order: 3; flex-basis: 100%; } }
+
+/* With the time-lapse bar along the bottom, the demo-controls button moves up out of its way. */
+@media (min-width: 900px) { .demo-btn { bottom: auto; top: 76px; } .drawer { bottom: auto; top: 116px; } }

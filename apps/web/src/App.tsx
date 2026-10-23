@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Alert } from "@rakshasutra/core";
 import { DemoDrawer } from "./DemoDrawer";
+import { TimeLapse } from "./TimeLapse";
 import { FxLayer } from "./FxLayer";
 import { celebrate } from "./fx";
 import { Landing, type SheetId } from "./Landing";
@@ -66,7 +67,7 @@ export function App() {
 
   const open: Alert | undefined = useMemo(() => st?.alerts.find((a) => a.status === "open"), [st?.alerts]);
 
-  // Good news gets a little party: a plan being saved, and Aarav getting home as planned. Alerts never do.
+  // Good news gets a little party: a plan being saved, and Adam getting home as planned. Alerts never do.
   const planStatuses = useRef<Record<string, string> | undefined>(undefined);
   useEffect(() => {
     if (!st) return;
@@ -132,6 +133,7 @@ export function App() {
     <>
       <Landing st={st} open={open} view={view} onCloseBee={done} />
       {st.mode === "demo" && <DemoDrawer st={st} />}
+      {st.mode === "demo" && <TimeLapse st={st} />}
       <FxLayer />
     </>
   );

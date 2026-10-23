@@ -31,7 +31,7 @@
 
 Most child-safety devices wait for a child to press a button. RakshaSutra does not wait. It **listens for the plan**, **watches for the unexpected**, and **tells the parent early, with the reasons**. It started as a student's school-project idea that relied on passive RFID tags, and became a proactive companion built on a **Bee wearable**.
 
-> *"Ayaan has CTE class today, so I'll pick him up from the school at 5 p.m."*
+> *"Adam has CTE class today, so I'll pick him up from the school at 5 p.m."*
 > Bee hears it → RakshaSutra proposes a plan → the guardian confirms → the safety engine judges the child's location reports against that plan. An alert fires **only when something is actually unexpected**, and it always says what was expected, what is known and **what is not known**.
 
 | | |
@@ -71,7 +71,7 @@ Open <http://localhost:8787>, open **Demo controls**, choose **The unexpected de
 The simulator replays a child's iPhone into a private real-mode copy of the app, along real roads and footpaths, and reads your live Bee when the Bee CLI is installed.
 
 ```bash
-npm run setup:real -- --name Ayaan --age 13     # once: creates the private data/ folder and the family code
+npm run setup:real -- --name Adam --age 13     # once: creates the private data/ folder and the family code
 npm run sim:serve                               # private simulator server on :8788
 npm run sim -- school-run                       # in another window
 ```

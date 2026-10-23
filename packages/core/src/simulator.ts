@@ -1,4 +1,4 @@
-import { destination, LatLon } from "./geo.js";
+import { bearingDeg, destination, haversineM, LatLon } from "./geo.js";
 import { StaticPlaces } from "./sos.js";
 import { ChildProfile, Ping } from "./types.js";
 
@@ -7,13 +7,15 @@ export const HOME: LatLon = { lat: 29.97, lon: -95.69 };
 export const SCHOOL: LatLon = destination(HOME, 40, 1100);
 
 export const ROBOTICS: LatLon = destination(HOME, 300, 1800);
+/** Career and technical education centre: the afternoon bus destination in the "schoolday" story. */
+export const CTE: LatLon = destination(SCHOOL, 20, 2400);
 
-export const DEMO_CHILD_ID = "child-aarav";
+export const DEMO_CHILD_ID = "child-adam";
 
 export const demoProfile: ChildProfile = {
   id: DEMO_CHILD_ID,
-  name: "Aarav",
-  nameAliases: ["Arab", "Arav", "Aarov", "Aaraav"],
+  name: "Adam",
+  nameAliases: ["Atom", "Adan", "Adams", "Edam"], // how speech-to-text may mishear the name
   age: 11,
   region: "US",
   tzOffsetMin: -300,
@@ -29,7 +31,8 @@ export const demoProfile: ChildProfile = {
   zones: [
     { id: "home", name: "Home", kind: "safe", ...HOME, radiusM: 120, allowPickup: true },
     { id: "robotics", name: "Robotics Center (demo)", kind: "safe", ...ROBOTICS, radiusM: 120, allowPickup: true },
-    { id: "school", name: "Smith Middle School (demo)", kind: "safe", ...SCHOOL, radiusM: 150, allowPickup: true },
+    { id: "school", name: "Liberty HS", kind: "safe", ...SCHOOL, radiusM: 150, allowPickup: true },
+    { id: "cte", name: "Liberty HS CTE Center", kind: "safe", ...CTE, radiusM: 150, allowPickup: true },
     {
       id: "lot",
       name: "Abandoned industrial lot (demo)",
@@ -49,7 +52,7 @@ export const demoPlaces = new StaticPlaces([
   { name: "24h Pharmacy (demo)", kind: "open-24h", ...destination(HOME, 90, 3800) },
 ]);
 
-export type ScenarioName = "abduction" | "everyday" | "delay";
+export type ScenarioName = "abduction" | "everyday" | "delay" | "schoolday";
 
 export interface ScenarioEvent {
   t: number; // epoch ms (virtual)
@@ -62,6 +65,12 @@ export interface ScenarioEvent {
   planAction?: "confirm-latest";
 }
 
+/** A moment worth jumping to in the time-lapse controls. */
+export interface Chapter {
+  t: number; // epoch ms (virtual)
+  label: string;
+}
+
 export interface Scenario {
   name: ScenarioName;
   title: string;
@@ -70,6 +79,10 @@ export interface Scenario {
   /** Virtual seconds per real second. */
   defaultSpeed: number;
   events: ScenarioEvent[];
+  /** Play the scripted notes even when a live Bee is connected (the school-day story always does). */
+  scripted?: boolean;
+  /** Moments the time-lapse controls can jump to. */
+  chapters?: Chapter[];
 }
 
 function rng(seed: number) {
@@ -151,15 +164,82 @@ export function buildScenario(name: ScenarioName, childId = DEMO_CHILD_ID): Scen
     return { name, title: "A normal school day", startTs: at(7, 30), endTs: end, defaultSpeed: 600, events: b.events };
   }
 
+  if (name === "schoolday") {
+    // A full school day as a time-lapse: two guardian notes, a bus trip, and one walk off campus.
+    const startTs = at(8, 40);
+    const endTs = at(18, 5);
+    const b = new Builder(startTs, HOME, childId);
+    /** Stay near `center` until the virtual clock reaches h:m, pinging every `every` s with a little wandering. */
+    const stay = (center: LatLon, h: number, m: number, every: number, wander: number) => {
+      const end = at(h, m);
+      while (b.t + every * 1000 <= end) {
+        b.t += every * 1000;
+        b.battery -= 0.25;
+        b.pos = wander > 0 ? destination(center, r() * 360, r() * wander) : center;
+        b.ping(calm());
+      }
+      b.t = end;
+      b.pos = center;
+    };
+    /** Straight-line trip to `to` in `secs` (no road data), pinging every `every` s. */
+    const travel = (to: LatLon, secs: number, every: number, hr: () => number) => {
+      b.move(bearingDeg(b.pos, to), haversineM(b.pos, to) / secs, secs, every, hr);
+      b.pos = to;
+    };
+    const ride = () => 88 + Math.round(r() * 8);
+    const stroll = () => 96 + Math.round(r() * 10);
+
+    stay(HOME, 8, 56, 120, 6); // breakfast, backpack, out the door
+    travel(SCHOOL, 90, 10, ride); // drop-off, about 12 m/s
+    stay(SCHOOL, 10, 0, 300, 40);
+    b.note("Please keep an eye on Adam today and make sure he is safe. He goes to the CTE center at 3 p.m.");
+    b.confirm();
+    stay(SCHOOL, 14, 56, 300, 90); // classes, lunch and recess inside the campus; then the bus is loaded
+    travel(CTE, 240, 12, ride); // the bus, 10 m/s
+    stay(CTE, 16, 46, 300, 50);
+    travel(SCHOOL, 240, 12, ride); // the bus back
+    stay(SCHOOL, 17, 0, 300, 30);
+    b.note("I am going to be a little late, so he should be home by 6 p.m. I will pick him up around 5:30. Please keep him safe at school and make sure he is not going around.");
+    b.confirm();
+    stay(SCHOOL, 17, 8, 120, 20);
+    // The tension beat: he walks about 350 m off campus (north-west, clear of the flagged lot), lingers, and comes back.
+    const away = destination(SCHOOL, 310, 350);
+    b.move(310, 1.4, 250, 15, stroll);
+    b.pos = away;
+    b.dwell(2, 60, stroll);
+    b.pos = away;
+    travel(SCHOOL, 250, 15, stroll);
+    stay(SCHOOL, 17, 30, 120, 20);
+    stay(SCHOOL, 17, 56, 120, 0); // parent pick-up at the gate, signing him out
+    b.t = at(17, 56) + 30_000;
+    travel(HOME, 90, 10, ride); // drive home, about 12 m/s
+    stay(HOME, 18, 5, 120, 8);
+
+    b.t = startTs;
+    b.tickUntil(endTs, 30);
+    const events = b.events.sort((x, y) => x.t - y.t); // stable: a note stays right before its confirm
+    // The story is told with scripted notes even when a live Bee is connected, so the time-lapse always plays the same way.
+    const chapters: Chapter[] = [
+      { t: at(9, 0), label: "At school" },
+      { t: at(10, 0), label: "Parent asks Bee to keep watch" },
+      { t: at(14, 45), label: "Leaves for CTE" },
+      { t: at(15, 0), label: "Reaches CTE safely" },
+      { t: at(17, 0), label: "Late pick-up, keep him at school" },
+      { t: at(17, 11), label: "Leaves school: heads-up" },
+      { t: at(17, 58), label: "Home, safe" },
+    ];
+    return { name, title: "A school day with Bee: kept safe from 9 to 6", startTs, endTs, defaultSpeed: 240, events, scripted: true, chapters };
+  }
+
   if (name === "delay") {
     const b = new Builder(at(16, 30), ROBOTICS, childId);
     b.dwell(1, 60, calm);
-    b.note("Aarav has robotics practice today. Practice ends at 5 and I'll pick him up at 5:30.");
+    b.note("Adam has robotics practice today. Practice ends at 5 and I'll pick him up at 5:30.");
     b.t += 60_000;
     b.confirm();
     b.dwell(40, 120, calm); // until 17:12, then the phone goes offline
     b.tickUntil(at(17, 46), 30); // 17:45: expected check-in is overdue
-    b.note("Aarav's robotics practice is running late, I'll pick him up at 6 instead of 5:30.");
+    b.note("Adam's robotics practice is running late, I'll pick him up at 6 instead of 5:30.");
     b.t += 60_000;
     b.confirm();
     b.tickUntil(at(17, 50), 30);

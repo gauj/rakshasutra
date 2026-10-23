@@ -22,7 +22,7 @@ const ok = (n, c) => {
   console.log((c ? "PASS" : "FAIL") + "  " + n);
 };
 
-const setup = spawnSync(process.execPath, ["--import", "tsx", "apps/server/src/setup-real.ts", "--name", "Ayaan", "--age", "13", "--tz", "-300"], { cwd: root, env, encoding: "utf8" });
+const setup = spawnSync(process.execPath, ["--import", "tsx", "apps/server/src/setup-real.ts", "--name", "Adam", "--age", "13", "--tz", "-300"], { cwd: root, env, encoding: "utf8" });
 if (setup.status !== 0) {
   console.error(setup.stdout, setup.stderr);
   process.exit(1);
@@ -67,7 +67,7 @@ try {
   ok("wrong code -> 401", (await fetch(B + "/api/state", { headers: { "x-parent-token": "x".repeat(24) } })).status === 401);
   ok("the old demo code does not work in real mode", (await fetch(B + "/api/state", { headers: { "x-parent-token": "demo-parent" } })).status === 401);
   let s = await state();
-  ok("real mode, Ayaan, no demo feed", s.mode === "real" && s.child.name === "Ayaan" && s.run === null);
+  ok("real mode, Adam, no demo feed", s.mode === "real" && s.child.name === "Adam" && s.run === null);
   ok("demo controls are refused", (await j("/api/demo/start", { method: "POST", body: "{}" })).s === 409);
   const hdr = (await j("/api/state")).r.headers;
   ok("security headers: no-store, nosniff, no framing", hdr.get("cache-control") === "no-store" && hdr.get("x-content-type-options") === "nosniff" && hdr.get("x-frame-options") === "DENY");
@@ -99,7 +99,7 @@ try {
   console.log("--- the real use case: left robotics, never arrived, then arrives");
   await post({ _type: "location", lat: ROBO.lat, lon: ROBO.lon, tst: now() - 1500, acc: 8, batt: 68, t: "c", inregions: ["Robotics Center"] });
   await post({ _type: "location", lat: ROBO.lat - 0.002, lon: ROBO.lon, tst: now() - 1380, acc: 20, batt: 66, t: "c", inregions: [] });
-  r = await j("/api/notes", { method: "POST", body: JSON.stringify({ text: `Ayaan has robotics practice. I will pick him up at ${localText(20)}.` }) });
+  r = await j("/api/notes", { method: "POST", body: JSON.stringify({ text: `Adam has robotics practice. I will pick him up at ${localText(20)}.` }) });
   ok("the guardian's note becomes a plan due 20 minutes ago", r.s === 200 && r.b.status === "proposed");
   await j("/api/plans/" + r.b.id + "/confirm", { method: "POST" });
   await sleep(1500);

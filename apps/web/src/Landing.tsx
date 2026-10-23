@@ -13,7 +13,7 @@ import { Sheet } from "./Sheet";
 import { Squiggle } from "./Squiggle";
 import { SetupPage } from "./SetupPage";
 import { SummaryPage } from "./SummaryPage";
-import { agoText, moodOf, planClock, type State } from "./state";
+import { agoText, clock12, moodOf, planClock, type State } from "./state";
 
 export type SheetId = "ask" | "summary" | "checkin" | "bee" | "setup";
 
@@ -47,6 +47,20 @@ function beeraSays(st: State, open?: Alert): { mood: BeeraMood; line: string; su
     return { mood: "curious", line: "Hmm, this is worth a look.", sub: why ? `${why.title}. Not a confirmed emergency.` : "I'm keeping an eye on it." };
   }
   if (!last) return { mood: "happy", line: "Hi, I'm Beera!", sub: `Tell me when you expect ${name} somewhere.` };
+  const tz = st.child.tzOffsetMin;
+  const zoneName = (id?: string) => st.child.zones.find((z) => z.id === id)?.name ?? "the planned place";
+  // Good news first: he reached the place a plan expected, in the last 45 minutes.
+  const arrived = st.plans
+    .filter((p) => p.status === "completed" && p.completedAt && st.now - p.completedAt < 45 * 60_000)
+    .sort((a, b) => b.completedAt! - a.completedAt!)[0];
+  if (arrived && !plan) {
+    const home = arrived.expectedZoneId === "home";
+    return { mood: "cheer", line: home ? `${name} is home!` : `${name} arrived safely!`, sub: `Reached ${zoneName(arrived.expectedZoneId)} at ${clock12(arrived.completedAt!, tz)}. Right on plan.` };
+  }
+  // A "keep an eye on him" request is in force.
+  if (plan?.watch) {
+    return { mood: "happy", line: `I'm keeping an eye on ${name}.`, sub: `Watching ${zoneName(plan.watch.zoneId)} until ${clock12(plan.watch.until, tz)}, then ${zoneName(plan.expectedZoneId)}.` };
+  }
   if (done && !plan) return { mood: "cheer", line: `${name} is home!`, sub: "Right on plan. Nice one." };
   const place = st.now_state?.zone ? `at ${st.now_state.zone}` : st.now_state?.motion === "still" ? "somewhere new" : "on the move";
   return { mood: "happy", line: `${name}'s ${place}. All good!`, sub: open ? "Back to normal after the earlier alert." : plan ? "I'm watching the clock for you." : "No plan yet. Tell me one!" };

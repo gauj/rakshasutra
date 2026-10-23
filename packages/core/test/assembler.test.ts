@@ -5,7 +5,7 @@ import { DEMO_CHILD_ID, demoPlaces, demoProfile, GuardianEngine, isQuestionAbout
 const arrivals = [
   { id: 3760405973, text: "Practice ends at 5.", spokenAt: Date.parse("2026-10-16T02:24:52.000Z") },
   { id: 3760405974, text: "I will pick him up at 5.", spokenAt: Date.parse("2026-10-16T02:24:54.000Z") },
-  { id: 3760405993, text: "Hey, Arab has robotics practice today.", spokenAt: Date.parse("2026-10-16T02:24:49.000Z") },
+  { id: 3760405993, text: "Hey, Atom has robotics practice today.", spokenAt: Date.parse("2026-10-16T02:24:49.000Z") },
   { id: 3760406001, text: "30.from his school.", spokenAt: Date.parse("2026-10-16T02:24:55.000Z") },
 ];
 
@@ -13,7 +13,7 @@ describe("NoteAssembler", () => {
   it("orders by spoken time, not arrival time", () => {
     const a = new NoteAssembler();
     arrivals.forEach((p) => a.add(p));
-    expect(a.text().startsWith("Hey, Arab has robotics practice today.")).toBe(true);
+    expect(a.text().startsWith("Hey, Atom has robotics practice today.")).toBe(true);
     expect(a.text().endsWith("30.from his school.")).toBe(true);
   });
 
@@ -67,16 +67,16 @@ describe("speech repair", () => {
 describe("what the app may show from a Bee that hears everything", () => {
   it("treats talk about the child or a pick-up as relevant, and ordinary chatter as not", () => {
     expect(isRelevantNote("I'll pick him up at 5:30", demoProfile)).toBe(true);
-    expect(isRelevantNote("Hey Arab has robotics practice today", demoProfile)).toBe(true);
+    expect(isRelevantNote("Hey Atom has robotics practice today", demoProfile)).toBe(true);
     expect(isRelevantNote("Remember to buy milk and call the plumber", demoProfile)).toBe(false);
     expect(isRelevantNote("The meeting with the client moved to Thursday", demoProfile)).toBe(false);
   });
 
   it("recognises questions about the child", () => {
-    expect(isQuestionAboutChild("Where is Aarav?", demoProfile)).toBe(true);
-    expect(isQuestionAboutChild("Is Aarav okay", demoProfile)).toBe(true);
+    expect(isQuestionAboutChild("Where is Adam?", demoProfile)).toBe(true);
+    expect(isQuestionAboutChild("Is Adam okay", demoProfile)).toBe(true);
     expect(isQuestionAboutChild("Where's he now", demoProfile)).toBe(true);
-    expect(isQuestionAboutChild("Aarav has practice today", demoProfile)).toBe(false);
+    expect(isQuestionAboutChild("Adam has practice today", demoProfile)).toBe(false);
     expect(isQuestionAboutChild("What time is the meeting?", demoProfile)).toBe(false);
   });
 });

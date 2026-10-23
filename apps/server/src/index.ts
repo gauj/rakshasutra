@@ -31,6 +31,7 @@ import {
   ownTracksToPing,
   type Plan,
   type Scenario,
+  type ScenarioEvent,
   type ScenarioName,
   StaticPlaces,
   templateNarrative,
@@ -101,11 +102,13 @@ interface Run {
   speed: number;
   cursor: number;
   anchorVirtual: number;
+  /** The time-lapse is held still (the simulated clock stops; the story is not lost). */
+  paused?: boolean;
 }
 let run: Run | undefined;
 
 // Simulated time advances `speed` times faster than real time and stops at the scenario's end.
-const virtualNow = (r: Run) => Math.min(r.scenario.endTs, r.anchorVirtual + (Date.now() - r.realStart) * r.speed);
+const virtualNow = (r: Run) => (r.paused ? r.anchorVirtual : Math.min(r.scenario.endTs, r.anchorVirtual + (Date.now() - r.realStart) * r.speed));
 // Simulated time during a demo run, real time otherwise.
 const nowMs = () => (run ? virtualNow(run) : Date.now());
 
@@ -202,16 +205,18 @@ if (process.env.SNS_TO_PHONE) channels.push(smsChannel(process.env.SNS_TO_PHONE)
 const dispatcher = new AlertDispatcher(channels);
 
 /** Confirm a plan and, best effort, write a reminder into the guardian's Bee for when it falls due. */
-async function confirmPlan(planId: string): Promise<Plan | undefined> {
+async function confirmPlan(planId: string, quiet = false): Promise<Plan | undefined> {
   const plan = engine.confirmPlan(planId);
   if (!plan) return undefined;
   schedulePersist();
+  if (quiet) return plan; // replaying the story after a jump: no new reminder in Bee
   // Write the follow-up back to the guardian's Bee as a reminder, timed on the same clock as the demo.
   const target = plan.expectedAt + plan.graceMin * 60_000;
   const speed = run?.speed ?? 1;
   const real = Math.max(Date.now() + 60_000, Date.now() + (target - nowMs()) / speed);
   const label = run ? " (demo)" : "";
-  const wrote = await bridge.addReminder(`Check that ${profile.name} is home. Expected by ${fmtClock(plan.expectedAt, profile.tzOffsetMin)}${label}`, new Date(real));
+  const place = plan.expectedZoneId === (profile.homeZoneId ?? "home") ? "home" : `at ${profile.zones.find((z) => z.id === plan.expectedZoneId)?.name ?? "the planned place"}`;
+  const wrote = await bridge.addReminder(`Check that ${profile.name} is ${place}. Expected by ${fmtClock(plan.expectedAt, profile.tzOffsetMin)}${label}`, new Date(real));
   if (wrote) console.log("[bee] reminder written to Bee todos");
   return plan;
 }
@@ -234,12 +239,68 @@ function setSpeed(speed: number) {
   run.speed = speed;
 }
 
+/** One scenario event. A story with scripted notes plays them even when a live Bee is connected. */
+function playEvent(e: ScenarioEvent, quiet = false) {
+  const scripted = !beeLive() || !!run?.scenario.scripted;
+  if (e.ping) engine.ingestPing(e.ping);
+  else if (e.utterance) engine.ingestUtterance(e.utterance);
+  else if (e.tick) engine.tick(CHILD_ID, e.t);
+  else if (e.note && scripted) finishSpoken(e.note, "typed", e.t);
+  else if (e.planAction && scripted) {
+    const latest = [...engine.plansOf(CHILD_ID)].reverse().find((p) => p.status === "proposed");
+    if (latest) void confirmPlan(latest.id, quiet);
+  }
+}
+
+/** Tell the parent, once, that the child reached the place a plan expected: good news, never an alarm. */
+async function announceArrivals() {
+  for (const p of engine.newlyCompleted(CHILD_ID)) {
+    const at = p.completedAt ?? nowMs();
+    const zone = profile.zones.find((z) => z.id === p.expectedZoneId);
+    await dispatcher.info({
+      id: p.id,
+      subject: `${profile.name} arrived safely`,
+      short: `${profile.name} arrived safely, as planned.`,
+      long: `${profile.name} reached ${zone?.name ?? "the planned place"} at ${fmtClock(at, profile.tzOffsetMin)}. Plan: ${p.title}.`,
+      at,
+    });
+  }
+}
+
+/** Hold or release the time-lapse. */
+function setPaused(on: boolean) {
+  if (!run || !!run.paused === on) return;
+  if (on) run.anchorVirtual = virtualNow(run);
+  else run.realStart = Date.now();
+  run.paused = on;
+}
+
+/** Jump the time-lapse to a moment: rebuild the story up to then, instantly and quietly (no new Bee reminders). */
+function seekRun(ts: number) {
+  if (!run) return;
+  const target = Math.min(run.scenario.endTs, Math.max(run.scenario.startTs, ts));
+  engine.reset(CHILD_ID);
+  dispatcher.reset();
+  assembler.clear();
+  voice = undefined;
+  const ev = run.scenario.events;
+  let i = 0;
+  for (; i < ev.length && ev[i]!.t <= target; i++) playEvent(ev[i]!, true);
+  engine.tick(CHILD_ID, target);
+  void announceArrivals();
+  voice = undefined; // a jump should not pop open the Bee conversation for something said "earlier"
+  run.cursor = i;
+  run.anchorVirtual = target;
+  run.realStart = Date.now();
+}
+
 // Main loop, every 200 ms: deliver alerts, then either keep judging real time (real mode) or play the demo events that are now due.
 setInterval(() => {
   void dispatcher.sync(engine.alerts, nowMs());
   if (REAL) {
     // Real time passes whether or not the phone reports: keep judging (for example, "he is overdue").
     engine.tick(CHILD_ID, Date.now());
+    void announceArrivals();
     return;
   }
   if (!run) return;
@@ -247,15 +308,10 @@ setInterval(() => {
   const ev = run.scenario.events;
   while (run.cursor < ev.length && ev[run.cursor]!.t <= now) {
     const e = ev[run.cursor++]!;
-    if (e.ping) engine.ingestPing(e.ping);
-    else if (e.utterance) engine.ingestUtterance(e.utterance);
-    else if (e.note && !beeLive()) finishSpoken(e.note, "typed", e.t);
-    else if (e.planAction && !beeLive()) {
-      const latest = [...engine.plansOf(CHILD_ID)].reverse().find((p) => p.status === "proposed");
-      if (latest) void confirmPlan(latest.id);
-    }
+    playEvent(e);
   }
   engine.tick(CHILD_ID, now);
+  void announceArrivals();
 }, 200);
 
 // ---- The phone: what the iPhone has told us -----------------------------------
@@ -314,7 +370,7 @@ app.get("/api/state", (c) => {
   return c.json({
     mode: REAL ? "real" : "demo",
     now,
-    run: run ? { name: run.scenario.name, title: run.scenario.title, speed: run.speed, progress: (now - run.scenario.startTs) / (run.scenario.endTs - run.scenario.startTs) } : null,
+    run: run ? { name: run.scenario.name, title: run.scenario.title, speed: run.speed, progress: (now - run.scenario.startTs) / (run.scenario.endTs - run.scenario.startTs), paused: !!run.paused, now, startTs: run.scenario.startTs, endTs: run.scenario.endTs, chapters: run.scenario.chapters ?? [] } : null,
     bee: { ...bridge.status, scriptedNotes: !beeLive() },
     device: REAL ? { connected: device.lastAt > 0, lastAt: device.lastAt || null, battery: device.battery ?? null, count: device.count } : null,
     child: { id: profile.id, name: profile.name, age: profile.age, zones: profile.zones, consent: profile.consent, tzOffsetMin: profile.tzOffsetMin, photo: family?.child.photo ?? "" },
@@ -338,7 +394,7 @@ app.get("/api/state", (c) => {
 app.post("/api/demo/start", async (c) => {
   if (REAL) return c.json(demoOnly(), 409);
   const b = (await c.req.json().catch(() => ({}))) as { scenario?: ScenarioName; speed?: number };
-  const name: ScenarioName = b.scenario === "everyday" || b.scenario === "delay" ? b.scenario : "abduction";
+  const name: ScenarioName = b.scenario === "everyday" || b.scenario === "delay" || b.scenario === "schoolday" ? b.scenario : "abduction";
   startRun(name, b.speed);
   return c.json({ ok: true });
 });
@@ -347,6 +403,22 @@ app.post("/api/demo/speed", async (c) => {
   if (REAL) return c.json(demoOnly(), 409);
   const b = (await c.req.json().catch(() => ({}))) as { speed?: number };
   if (b.speed && b.speed > 0) setSpeed(Math.min(b.speed, 5000));
+  return c.json({ ok: true });
+});
+
+// Time-lapse: hold or release the clock, and jump to a moment in the story.
+app.post("/api/demo/pause", async (c) => {
+  if (REAL) return c.json(demoOnly(), 409);
+  const b = (await c.req.json().catch(() => ({}))) as { paused?: boolean };
+  setPaused(typeof b.paused === "boolean" ? b.paused : !run?.paused);
+  return c.json({ ok: true, paused: !!run?.paused });
+});
+
+app.post("/api/demo/seek", async (c) => {
+  if (REAL) return c.json(demoOnly(), 409);
+  const b = (await c.req.json().catch(() => ({}))) as { ts?: number };
+  if (!run || typeof b.ts !== "number" || !Number.isFinite(b.ts)) return c.json({ error: "no demo is running, or no time given" }, 400);
+  seekRun(b.ts);
   return c.json({ ok: true });
 });
 

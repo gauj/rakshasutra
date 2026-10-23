@@ -19,7 +19,7 @@ export function DemoDrawer({ st }: { st: State }) {
       setNote("");
       setMsg(undefined);
     } catch {
-      setMsg("That does not sound like it is about Aarav, a pick-up or a schedule, so I ignored it.");
+      setMsg("That does not sound like it is about Adam, a pick-up or a schedule, so I ignored it.");
     }
   };
 
@@ -34,6 +34,7 @@ export function DemoDrawer({ st }: { st: State }) {
           <label className="small muted" htmlFor="sc">Story</label>
           <select id="sc" value={scenario} onChange={(e) => setScenario(e.target.value)}>
             <option value="delay">The unexpected delay (Bee notes)</option>
+            <option value="schoolday">A school day with Bee (9 to 6)</option>
             <option value="abduction">Walk home goes wrong</option>
             <option value="everyday">A normal school day</option>
           </select>

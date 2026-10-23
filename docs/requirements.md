@@ -23,7 +23,7 @@ Target: Amazon "Build, Ship, Shape" Developer Hackathon, Bee (Wearable AI) track
 | Constraint | Source | Consequence |
 |---|---|---|
 | Bee app is rated 18+, so a child cannot be the Bee user | App Store listing (Bee terms clause not directly verified) | Adult guardian wears Bee; child's feed comes from another source |
-| Entrants must be of age of majority | Hackathon rules section 3 | Ayaan cannot be an entrant or team member; credit needs organizer guidance |
+| Entrants must be of age of majority | Hackathon rules section 3 | Adam cannot be an entrant or team member; credit needs organizer guidance |
 | Bee track needs data from a real Bee or an Apple Watch running Bee software | Rules, Bee track requirements | A simulated Bee does not qualify; the demo video must show live Bee data |
 | Must use Bee's CLI, MCP, or Agent Skills at runtime | Rules | The server uses the official CLI library, not raw REST |
 | No documented heart rate, motion, battery or continuous GPS from Bee | Bee docs, bee-cli README | Those signals are simulated and labelled |

@@ -117,7 +117,7 @@ API Gateway and Lambda for the API; DynamoDB for pings, plans and alerts; EventB
 | Bedrock path never executed | Falls back to a template |
 | No real auth, storage, delivery or deployment | Prototype only |
 | Child feed is synthetic | Must stay labelled; real source is roadmap |
-| Credit and ownership of Ayaan's original concept | Ask organizers; rules require sole ownership by the entrant |
+| Credit and ownership of Adam's original concept | Ask organizers; rules require sole ownership by the entrant |
 
 ## 12. Proactive SOS (added 2026-10-16)
 
@@ -137,9 +137,9 @@ Parent taps "Create live link" ──► /s/<token> (read-only, 2 h, revocable) 
 
 The first interface was a dark, map-first dashboard, which felt like a tracker. The app's promise is the opposite ("an armor that lets children be children"; understand whether a child may need help, not only where they are), so the interface was rebuilt around the *protective thread* (the "sutra").
 
-- **Calm by default.** One warm sentence ("Aarav is at Smith Middle School.") and a plain line about the plan. The map stays closed unless the parent opens it or something needs attention, which respects the child.
+- **Calm by default.** One warm sentence ("Adam is at Smith Middle School.") and a plain line about the plan. The map stays closed unless the parent opens it or something needs attention, which respects the child.
 - **The Day Thread.** The day is a vertical thread of knots (places, walks, rides), newest first. A dashed stretch means the signal was lost; a dotted hollow knot at the top is where the child is expected next.
-- **Three moods, three tones.** Calm (sage), "Worth a look" (amber), "Needs you now" (restrained red). The headline changes ("Aarav has not checked in as expected." vs "Aarav may need help.") instead of shouting.
+- **Three moods, three tones.** Calm (sage), "Worth a look" (amber), "Needs you now" (restrained red). The headline changes ("Adam has not checked in as expected." vs "Adam may need help.") instead of shouting.
 - **Explain, then act.** An alert shows what we noticed, then Expected / What we know / What we do not know, then three calm numbered steps. Emergency numbers are text only.
 - **Your Bee has a voice.** What the Bee heard is quoted and confirmed by the guardian ("I understood: Expected back at Home by 5:30 PM").
 - **Honest labels.** A chip says "Demo feed, not a real tracker" whenever the feed is simulated.
@@ -150,9 +150,9 @@ The first interface was a dark, map-first dashboard, which felt like a tracker. 
 
 The elegant "Day Thread" look was replaced with something warmer, built from a mock the owner drew.
 
-- **First screen:** the map on the left and three big organic blobs on the right: coral "Ask About Aarav", orange "Aarav's Summary", yellow "Check-in" (dark text on yellow for contrast). The blobs gently morph and bounce on hover. If something needs attention, a banner rises over the map and the Check-in blob gets a "!".
+- **First screen:** the map on the left and three big organic blobs on the right: coral "Ask About Adam", orange "Adam's Summary", yellow "Check-in" (dark text on yellow for contrast). The blobs gently morph and bounce on hover. If something needs attention, a banner rises over the map and the Check-in blob gets a "!".
 - **Pages (hash routes):** `#/` landing, `#/checkin` (status sentence, explained alert, plan, how we reached you), `#/summary` (colorful numbers, short story, the day thread), `#/ask` (chat with instant local answers), `#/bee`.
-- **The Bee page:** when the guardian talks to their Bee about the child, the screen jumps to a chat: "You said", Bee's reply (the understood plan with Yes / Not quite, an answer, or a gentle "I could not find a time"), and "Aarav right now". It appears while the guardian is still talking (dots), and closes itself after 40 s unless a plan is waiting for a yes.
+- **The Bee page:** when the guardian talks to their Bee about the child, the screen jumps to a chat: "You said", Bee's reply (the understood plan with Yes / Not quite, an answer, or a gentle "I could not find a time"), and "Adam right now". It appears while the guardian is still talking (dots), and closes itself after 40 s unless a plan is waiting for a yes.
 - **Privacy rule for the Bee page:** a Bee hears everything nearby, so only speech that is about the child (his name or a spelling variant, a pick-up or schedule word, a question about him) ever reaches the server's `voice` state or the screen. Everything else is dropped from memory after the 45 s assembly window and is never shown or stored. Core: `isRelevantNote`, `isQuestionAboutChild`. Server: `voice` in `/api/state`, `POST /api/voice/dismiss`.
 - **Look:** black canvas, coral / orange / yellow / mint, Nunito (rounded) font, big radii, bouncy motion that respects reduced-motion, a few emoji.
 - This replaces the earlier "map closed by default" idea: the map is now the first thing the parent sees, by the owner's design.
@@ -176,8 +176,8 @@ Inspired by a screenshot of a playful, gamified learning site the owner shared. 
 
 - **Chunky 3D:** buttons, chips, cards and tiles have a thick bottom "lip" and press down when tapped (`translateY` plus a shrinking shadow). Primary actions are green with uppercase labels; secondary ones are dark with a bright outline. Headlines and buttons use Baloo 2; body text uses Nunito.
 - **Saturated tiles:** Ask (red), Summary (peach) and Check-in (yellow) are bright cards with an eyebrow label, an emoji, a bold title and a live preview, like the "Class 1 / 2 / 3" cards in the reference. In light mode (Latte) they are tinted instead, to keep the text readable.
-- **Beera, the bee mascot** (`Beera.tsx`, original artwork): the face follows the situation. Smiling when all is well, curious for "worth a look", frowning and serious for an alert, an open mouth while you talk, and cheering when Aarav is home. Beera has a speech card at the top of the tile column, sits in the status card, and is the avatar of Bee's chat bubbles.
-- **Celebrations for good news only** (`fx.ts`, `FxLayer.tsx`): confetti and a toast when a plan is saved, and a bigger burst when Aarav gets home as planned; a short vibration on phones. Alerts never get confetti, jokes or sound. Reduced-motion users get the toast without the confetti.
+- **Beera, the bee mascot** (`Beera.tsx`, original artwork): the face follows the situation. Smiling when all is well, curious for "worth a look", frowning and serious for an alert, an open mouth while you talk, and cheering when Adam is home. Beera has a speech card at the top of the tile column, sits in the status card, and is the avatar of Bee's chat bubbles.
+- **Celebrations for good news only** (`fx.ts`, `FxLayer.tsx`): confetti and a toast when a plan is saved, and a bigger burst when Adam gets home as planned; a short vibration on phones. Alerts never get confetti, jokes or sound. Reduced-motion users get the toast without the confetti.
 - **Alive:** numbers count up; page content bounces in one piece after another; a countdown chip shows "Home in 12 min" or "15 min overdue" (`planClock`); tiles wiggle on hover.
 - Light and dark mode follow the system (Latte / Mocha). The Demo button is hidden while an expanded view is open.
 

@@ -13,7 +13,7 @@ export function Mark({ size = 30 }: { size?: number }) {
   );
 }
 
-/** What Aarav is doing, in one friendly sentence. Used by the check-in page and the Bee page. */
+/** What Adam is doing, in one friendly sentence. Used by the check-in page and the Bee page. */
 export function sentence(st: State, open?: Alert) {
   const name = st.child.name;
   const n = st.now_state;

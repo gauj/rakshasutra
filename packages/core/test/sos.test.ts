@@ -76,7 +76,7 @@ describe("SOS detail (abduction)", async () => {
   });
 
   it("gives responders a brief with description and medical information, and parents backup contacts", () => {
-    expect(sos.emergencyBrief).toContain("Aarav");
+    expect(sos.emergencyBrief).toContain("Adam");
     expect(sos.emergencyBrief).toContain("Medical: Mild asthma");
     expect(sos.contacts.length).toBe(2);
     expect(sos.longText).toContain("WHAT WE DO NOT KNOW");

@@ -17,6 +17,7 @@
     "start:real": "npm -w @rakshasutra/web run build && npm -w @rakshasutra/server run start",
     "e2e:real": "node scripts/e2e-real.mjs",
     "sim:serve": "node scripts/sim.mjs serve",
-    "sim": "node scripts/sim.mjs"
+    "sim": "node scripts/sim.mjs",
+    "demo": "node scripts/demo.mjs"
   }
 }

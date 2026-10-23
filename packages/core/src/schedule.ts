@@ -1,4 +1,4 @@
-import { ChildProfile, Plan } from "./types.js";
+import { ChildProfile, Plan, Zone } from "./types.js";
 
 const NUMBER_WORDS: Record<string, string> = {
   zero: "0", one: "1", two: "2", three: "3", four: "4", five: "5", six: "6",
@@ -67,7 +67,7 @@ export function normalizeSpeech(text: string): string {
     .trim();
 }
 
-const SCHEDULE_WORDS = /\b(pick(ing)?\s+(\w+\s+)?up|pick-?up|practice|class|lesson|rehearsal|training|game|home by|back by|running (late|behind)|runs? late|dropped? off|collect)\b/i;
+const SCHEDULE_WORDS = /\b(keep (an )?eye|make sure (he|she|they)|going around|goes? to the|pick(ing)?\s+(\w+\s+)?up|pick-?up|practice|class|lesson|rehearsal|training|game|home by|back by|running (late|behind)|runs? late|dropped? off|collect)\b/i;
 
 function mentionsName(t: string, profile: ChildProfile): boolean {
   const names = [profile.name, ...(profile.nameAliases ?? [])].join("|");
@@ -84,7 +84,7 @@ export function isRelevantNote(text: string, profile: ChildProfile): boolean {
   return mentionsName(t, profile) || SCHEDULE_WORDS.test(t);
 }
 
-/** "Where is Aarav?", "Is he okay?", "How is Aarav doing?" */
+/** "Where is Adam?", "Is he okay?", "How is Adam doing?" */
 export function isQuestionAboutChild(text: string, profile: ChildProfile): boolean {
   const t = normalizeSpeech(normalizeSpokenNumbers(text));
   if (/\bwhere('?s| is| are)\s+(he|she|they)\b/i.test(t)) return true;
@@ -97,6 +97,8 @@ export interface ParseContext {
   ts: number; // when the note was spoken
   /** The plan currently in force, used to interpret "running late" shifts. */
   current?: Plan;
+  /** The safe place the child is in right now, if any. A "keep an eye on him" note watches that place. */
+  currentZoneId?: string;
 }
 
 /**
@@ -104,7 +106,7 @@ export interface ParseContext {
  * does not depend on an LLM. Notes that are not about the child's schedule return undefined.
  */
 export function parseScheduleNote(text: string, ctx: ParseContext): Omit<Plan, "id" | "status" | "source"> | undefined {
-  const { profile, ts, current } = ctx;
+  const { profile, ts, current, currentZoneId } = ctx;
   // Words to digits first ("six" -> 6), then rejoin times the speech-to-text split ("5." + "30" -> 5:30).
   const t = normalizeSpeech(normalizeSpokenNumbers(text));
   const mentionsChild = mentionsName(t, profile);
@@ -131,6 +133,21 @@ export function parseScheduleNote(text: string, ctx: ParseContext): Omit<Plan, "
       reason = "time changed";
     }
   }
+  // "He goes to the CTE center at 3": expected at that place, not at home.
+  const safeZone = (word: string) =>
+    word.toLowerCase() === "home"
+      ? profile.zones.find((z) => z.id === (profile.homeZoneId ?? "home"))
+      : profile.zones.find((z) => z.kind === "safe" && (z.id.toLowerCase() === word.toLowerCase() || new RegExp(String.raw`\b${word}\b`, "i").test(z.name)));
+  let destZoneId: string | undefined;
+  if (expectedAt === undefined) {
+    const m = new RegExp(String.raw`\b(?:goes|going|go|heads?|heading|moves?|moving|walks?|walking)\s+(?:over\s+)?to\s+(?:the\s+)?([A-Za-z]+)(?:\s+(?:center|centre|class))?${GAP}${TIME}`, "i").exec(t);
+    const zone = m ? safeZone(m[1]!) : undefined;
+    const c = m ? parseClock(m[2]!, m[3], m[4]) : undefined;
+    if (zone && c) {
+      expectedAt = at(c);
+      destZoneId = zone.id;
+    }
+  }
   if (expectedAt === undefined) {
     const m = new RegExp(String.raw`${PICKUP}${GAP}${TIME}`, "i").exec(t);
     if (m) {
@@ -148,16 +165,49 @@ export function parseScheduleNote(text: string, ctx: ParseContext): Omit<Plan, "
   if (expectedAt === undefined) return undefined;
 
   const kind = /practice|lesson|class|training|game|rehearsal/i.exec(t)?.[0];
-  const title = /robotics/i.test(t) ? "Robotics practice" : /school/i.test(t) ? "School" : kind ? kind[0]!.toUpperCase() + kind.slice(1).toLowerCase() : "Pick-up";
   const home = profile.zones.find((z) => z.id === (profile.homeZoneId ?? "home"));
+  const dest = profile.zones.find((z) => z.id === destZoneId);
+
+  // "Keep an eye on him", "make sure he is safe at school": watch a place until he is due to leave it.
+  let watch: Plan["watch"];
+  if (/\b(keep (?:an )?eye|keep (?:him|her|them) safe|keeps? watch|make sure (?:he|she|they)|going around|wander)/i.test(t)) {
+    let wz: Zone | undefined;
+    for (const m of t.matchAll(/\b(?:at|in)\s+(?:the\s+)?([A-Za-z]+)/gi)) {
+      const z = safeZone(m[1]!);
+      if (z && z.id !== (profile.homeZoneId ?? "home")) {
+        wz = z;
+        break;
+      }
+    }
+    wz ??= profile.zones.find((z) => z.id === currentZoneId && z.id !== destZoneId);
+    if (wz) {
+      // He may leave when his ride arrives, or in time to reach the next place.
+      const pick = new RegExp(String.raw`pick(?:ing)?(?:\s+(?:him|her|them))?\s*up${GAP}${TIME}`, "i").exec(t);
+      const pc = pick ? parseClock(pick[1]!, pick[2], pick[3]) : undefined;
+      const until = !dest && pc ? at(pc) : dest ? expectedAt - 20 * 60_000 : expectedAt - 30 * 60_000;
+      if (until > ts) watch = { zoneId: wz.id, until };
+    }
+  }
+
+  const title = dest
+    ? `Goes to ${dest.name}`
+    : /robotics/i.test(t)
+      ? "Robotics practice"
+      : /school/i.test(t)
+        ? "School"
+        : kind
+          ? kind[0]!.toUpperCase() + kind.slice(1).toLowerCase()
+          : "Pick-up";
+  const watchZone = profile.zones.find((z) => z.id === watch?.zoneId);
   const interpretation =
-    `Expected back at ${home?.name ?? "home"} by ${fmtClock(expectedAt, profile.tzOffsetMin)}` +
+    (watch && watchZone ? `Keeping watch at ${watchZone.name}: we will tell you if ${profile.name} leaves before ${fmtClock(watch.until, profile.tzOffsetMin)}. ` : "") +
+    `Expected at ${dest?.name ?? home?.name ?? "home"} by ${fmtClock(expectedAt, profile.tzOffsetMin)}` +
     (previous ? ` (was ${fmtClock(previous, profile.tzOffsetMin)}${reason ? "; " + reason : ""})` : "") +
     `. No late-arrival alert until 15 min after that.`;
   return {
     childId: profile.id,
     title,
-    expectedZoneId: home?.id ?? "home",
+    expectedZoneId: dest?.id ?? home?.id ?? "home",
     expectedAt,
     graceMin: 15,
     sourceText: t,
@@ -165,5 +215,6 @@ export function parseScheduleNote(text: string, ctx: ParseContext): Omit<Plan, "
     previousExpectedAt: previous,
     interpretation,
     confidence: instead || previous === undefined ? (mentionsChild ? 0.9 : 0.75) : 0.6,
+    ...(watch ? { watch } : {}),
   };
 }

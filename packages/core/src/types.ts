@@ -63,7 +63,7 @@ export interface ChildProfile {
   description?: string;
   /** For responders: allergies, conditions, medication. Optional. */
   medical?: string;
-  /** Spellings speech-to-text may produce for the name, e.g. "Arab" for "Aarav". */
+  /** Spellings speech-to-text may produce for the name, e.g. "Arab" for "Adam". */
   nameAliases?: string[];
   homeZoneId?: string;
   zones: Zone[];
@@ -114,6 +114,7 @@ export type SignalId =
   | "SAFE_ZONE_EXIT_QUIET_HOURS"
   | "VOICE_DISTRESS"
   | "BATTERY_LOW"
+  | "WATCH_BREACH"
   | "LATE_ARRIVAL";
 
 /** One reason for concern, with a plain-language title and detail the parent can read. */
@@ -168,6 +169,10 @@ export interface Plan {
   /** Plain-language reading of the note, shown to the guardian for confirmation. */
   interpretation: string;
   confidence: number;
+  /** "Keep watch": the child should stay inside this place until the given time, or the guardian is told. */
+  watch?: { zoneId: string; until: number };
+  /** When the child reached the expected place (set when the plan completes). */
+  completedAt?: number;
 }
 
 /** A nearby place that could help (police, hospital and so on). Shown for information only; nobody is contacted. */

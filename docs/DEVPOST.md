@@ -33,9 +33,9 @@ typescript, nodejs, react, vite, hono, leaflet, openstreetmap, bee, bee-cli, own
 
 ### Inspiration
 
-It began with a school project. A student, Ayaan, designed a child-safety idea around passive RFID tags read at gates. It is a good idea with one big weakness: it only works where a reader happens to be, and it never knows what was *supposed* to happen. A parent does not worry because a tag was missed. A parent worries because the child did not arrive when expected.
+It began with a school project. A student, Adam, designed a child-safety idea around passive RFID tags read at gates. It is a good idea with one big weakness: it only works where a reader happens to be, and it never knows what was *supposed* to happen. A parent does not worry because a tag was missed. A parent worries because the child did not arrive when expected.
 
-Bee gave us the missing piece: the plan. A parent already says the plan out loud ("Ayaan has class today, I'll pick him up from school at 5"). RakshaSutra listens for that sentence and turns it into something a safety system can check.
+Bee gave us the missing piece: the plan. A parent already says the plan out loud ("Adam has class today, I'll pick him up from school at 5"). RakshaSutra listens for that sentence and turns it into something a safety system can check.
 
 *Raksha* means protection and *sutra* means thread: a thread of care between a family and a child.
 
@@ -45,7 +45,7 @@ Bee gave us the missing piece: the plan. A parent already says the plan out loud
 2. **The guardian confirms.** Nothing happens until they tap confirm. A reminder is then written back to their Bee todos.
 3. **The safety engine judges against the plan.** The child's location reports are compared with what was expected. A late arrival, a walk into a flagged area, a vehicle-speed jump away from a pick-up point, a sudden stop, hours without moving or a silent phone each raise a graded alert.
 4. **Alerts explain themselves.** Every alert says what was expected, what is known and **what is not known**. A late arrival is a calm "worth a look", never a claim of danger. A 3-hour timeline, speed and heading, battery, nearest help, backup contacts and a short brief for a dispatcher come with it.
-5. **Beera, a friendly bee, narrates** in plain words, and the parent can ask "Where is Ayaan now?".
+5. **Beera, a friendly bee, narrates** in plain words, and the parent can ask "Where is Adam now?".
 
 Emergency numbers are display-only. The app never dials or messages them, in tests or demos, and refuses them as a destination or a saved contact.
 
@@ -76,7 +76,7 @@ We have not yet verified a run with a real iPhone moving. The demo child's feed 
 
 ### Challenges
 
-- **Live Bee speech is messy.** Utterances arrive out of order, a time can be split ("at 5." then "30."), a name is misheard ("Ayaan" becomes "Ayan" or "Ian"), and the same utterance can arrive twice. Parsing each piece as it arrived froze our plan at 5:00 PM. We now buffer, order by when it was spoken, de-duplicate, wait for a pause, rejoin split times and accept name aliases. We extracted that into a small open-source library (below).
+- **Live Bee speech is messy.** Utterances arrive out of order, a time can be split ("at 5." then "30."), a name is misheard ("Adam" becomes "Ayan" or "Ian"), and the same utterance can arrive twice. Parsing each piece as it arrived froze our plan at 5:00 PM. We now buffer, order by when it was spoken, de-duplicate, wait for a pause, rejoin split times and accept name aliases. We extracted that into a small open-source library (below).
 - **No sensors on a plain phone.** An iPhone has no heart rate and reports every few minutes. We switched off the rules that cry wolf on a real child (bus speed, a friend's house, GPS jitter), trusted the phone's own place events and made plans the main signal.
 - **Privacy.** A child's location is sensitive. Push messages carry no location or name, the Bee bridge keeps only schedule proposals, and the publish script refuses to release anything that looks personal.
 

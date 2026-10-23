@@ -37,7 +37,7 @@ export interface State {
   deliveries: DeliveryRecord[];
   channels: { id: string; label: string; minTier: string }[];
   day: { from: number; timeline: TimelineSegment[] };
-  run: { name: string; title: string; speed: number; progress: number } | null;
+  run: { name: string; title: string; speed: number; progress: number; paused: boolean; now: number; startTs: number; endTs: number; chapters: { t: number; label: string }[] } | null;
   child: { id: string; name: string; age: number; zones: Zone[]; tzOffsetMin: number; photo?: string; consent: { location: boolean; voice: boolean; heartRate: boolean } };
   tier: Tier;
   score: number;
@@ -81,7 +81,7 @@ export function agoText(min: number | undefined): string {
 
 export type ClockTone = "calm" | "look" | "urgent";
 
-/** How long until Aarav is expected home (or how late he is), in plain words. */
+/** How long until Adam is expected home (or how late he is), in plain words. */
 export function planClock(st: State): { text: string; tone: ClockTone } | undefined {
   const plan = st.plans.find((p) => p.status === "confirmed");
   if (!plan) return undefined;

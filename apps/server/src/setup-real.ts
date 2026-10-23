@@ -1,6 +1,6 @@
 import { DATA_DIR, familyExists, loadFamily, newFamily, saveFamily } from "./family.js";
 
-// Usage: npm run setup:real -- --name Ayaan --age 13 [--tz -300] [--force]
+// Usage: npm run setup:real -- --name Adam --age 13 [--tz -300] [--force]
 const args = process.argv.slice(2);
 const opt = (k: string) => {
   const i = args.indexOf(`--${k}`);
@@ -18,7 +18,7 @@ if (familyExists() && !args.includes("--force")) {
   process.exit(0);
 }
 if (!name || !Number.isFinite(age) || age < 4 || age > 17) {
-  console.error("Usage: npm run setup:real -- --name Ayaan --age 13 [--tz -300] [--force]");
+  console.error("Usage: npm run setup:real -- --name Adam --age 13 [--tz -300] [--force]");
   console.error("(--tz is the child's time zone in minutes from UTC; Texas in summer is -300.)");
   process.exit(1);
 }
