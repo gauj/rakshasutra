@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 340" width="1280" height="340" role="img" aria-label="RakshaSutra: a thread of care between a family and a child">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#181825"/>
+      <stop offset="1" stop-color="#1e1e2e"/>
+    </linearGradient>
+    <linearGradient id="thread" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#cba6f7"/>
+      <stop offset="0.5" stop-color="#f5c2e7"/>
+      <stop offset="1" stop-color="#fab387"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="340" rx="28" fill="url(#bg)"/>
+  <!-- a soft grid of map-like lines -->
+  <g stroke="#313244" stroke-width="1.5" opacity="0.7" fill="none">
+    <path d="M760 340 L1010 130 L1280 130"/>
+    <path d="M880 340 L1100 200 L1280 200"/>
+    <path d="M1000 0 L1000 120"/>
+    <path d="M1130 0 L1130 130 L1280 60"/>
+  </g>
+  <circle cx="1010" cy="130" r="9" fill="#a6e3a1"/>
+  <circle cx="1010" cy="130" r="20" fill="none" stroke="#a6e3a1" stroke-width="3" opacity="0.5"/>
+  <circle cx="1130" cy="130" r="6" fill="#f9e2af"/>
+  <!-- logo -->
+  <g transform="translate(80 86)">
+    <rect width="168" height="168" rx="40" fill="#11111b"/>
+    <path d="M84 24 L134 41.5 V79 C134 110 114 133 84 146 C54 133 34 110 34 79 V41.5 Z" fill="none" stroke="#cdd6f4" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M57 82 L76 101 L111 61" fill="none" stroke="#cba6f7" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- name -->
+  <text x="290" y="168" font-family="-apple-system, 'Segoe UI', Inter, Helvetica, Arial, sans-serif" font-size="78" font-weight="800" fill="#cdd6f4" letter-spacing="-2">RakshaSutra</text>
+  <path d="M292 192 q14 -16 28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0" fill="none" stroke="url(#thread)" stroke-width="5" stroke-linecap="round"/>
+  <text x="290" y="238" font-family="-apple-system, 'Segoe UI', Inter, Helvetica, Arial, sans-serif" font-size="27" fill="#a6adc8">A thread of care between a family and a child.</text>
+  <text x="290" y="274" font-family="-apple-system, 'Segoe UI', Inter, Helvetica, Arial, sans-serif" font-size="21" fill="#7f849c">Proactive child safety, built on Bee.  Raksha = protection, Sutra = thread.</text>
+</svg>

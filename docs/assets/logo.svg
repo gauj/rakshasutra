@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="RakshaSutra logo: a shield with a check mark">
+  <rect width="128" height="128" rx="30" fill="#11111b"/>
+  <path d="M64 18 L102 31.5 V60 C102 84 86.5 101.5 64 111 C41.5 101.5 26 84 26 60 V31.5 Z" fill="none" stroke="#cdd6f4" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M44 62 L58 76 L84 46" fill="none" stroke="#cba6f7" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
