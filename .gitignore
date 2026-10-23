@@ -13,3 +13,6 @@ tools/
 data/
 *.local.json
 data-sim/
+
+# Private video notes
+docs/video-voiceover.md

@@ -19,7 +19,7 @@
 ![Vitest](https://img.shields.io/badge/Vitest-97%20tests-6E9F18?style=flat-square&logo=vitest&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-cba6f7?style=flat-square)
 
-**[▶️ Watch the 3-minute demo](https://youtu.be/BaXYOOYGe1A)** · **[Quick start](#-quick-start)** · **[How it works](#-how-it-works)** · **[Real use](docs/REAL_USE.md)** · **[Safety engine](#-safety-engine)** · **[Privacy](#-privacy-and-security)** · **[Authors](#-authors)**
+**[▶️ Watch the demo video](https://youtu.be/BaXYOOYGe1A)** · **[Quick start](#-quick-start)** · **[How it works](#-how-it-works)** · **[Real use](docs/REAL_USE.md)** · **[Safety engine](#-safety-engine)** · **[Privacy](#-privacy-and-security)** · **[Authors](#-authors)**
 
 </div>
 
