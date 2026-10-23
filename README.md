@@ -277,7 +277,7 @@ Amazon Bedrock writes the reports and plain-language answers when `BEDROCK_MODEL
   </tr>
 </table>
 
-RakshaSutra began as Ayaan's school-project idea for child safety, and grew into a working app with his father.
+RakshaSutra began as Ayaan's school-project idea for child safety, and grew into a working app with his father. Ayaan is a co-author of the idea and the project. The hackathon entry itself is submitted by Gaurav, because the rules require entrants to be adults.
 
 ## 📄 Licence
 
