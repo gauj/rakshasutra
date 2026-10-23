@@ -1,3 +1,4 @@
+import { fmtMi, fmtMph } from "./units.js";
 /**
  * The rules engine. It keeps each child's recent pings, turns them into signals, scores those into a tier,
  * and raises, updates or quiets alerts. It only judges and builds alerts; sending is done elsewhere.
@@ -449,7 +450,7 @@ export class GuardianEngine {
           const startPing = st.pings.find((p) => p.ts >= start.ts) ?? last;
           const expected = st.profile.zones.some((z) => z.kind === "safe" && z.allowPickup && zoneContains(z, startPing));
           if (!expected) {
-            out.push(mk("MODE_SHIFT_VEHICLE", 6, "Walking to vehicle speed", `Speed jumped from walking to ${(cur.v * 3.6).toFixed(0)} km/h within 3 min, away from a known pick-up point.`));
+            out.push(mk("MODE_SHIFT_VEHICLE", 6, "Walking to vehicle speed", `Speed jumped from walking to ${fmtMph(cur.v * 3.6)} mph within 3 min, away from a known pick-up point.`));
           }
         }
       }
@@ -460,7 +461,7 @@ export class GuardianEngine {
         const b = series[i]!;
         const decel = (a.v - b.v) / Math.max(0.5, b.dt);
         if (a.v >= 8 && b.v < 1 && b.dt <= 15 && decel >= th.abruptDecelMs2 && now - b.ts <= 3 * 60_000) {
-          out.push(mk("ABRUPT_STOP", 3, "Sudden stop", `Speed fell from ${(a.v * 3.6).toFixed(0)} to ${(b.v * 3.6).toFixed(0)} km/h in ${b.dt.toFixed(0)} s.`));
+          out.push(mk("ABRUPT_STOP", 3, "Sudden stop", `Speed fell from ${fmtMph(a.v * 3.6)} to ${fmtMph(b.v * 3.6)} mph in ${b.dt.toFixed(0)} s.`));
           break;
         }
       }
@@ -510,7 +511,7 @@ export class GuardianEngine {
             "WATCH_BREACH",
             3,
             `Left ${wz.name} while you asked us to keep watch`,
-            `You asked us to keep watch at ${wz.name} until ${fmtClock(watched.watch.until, st.profile.tzOffsetMin)}. ${st.profile.name} is about ${Math.round(outsideM)} m outside it. Last update ${Math.round(age)} min ago. This does not confirm anything is wrong.`,
+            `You asked us to keep watch at ${wz.name} until ${fmtClock(watched.watch.until, st.profile.tzOffsetMin)}. ${st.profile.name} is about ${Math.round((outsideM * 3.28084) / 10) * 10} ft outside it. Last update ${Math.round(age)} min ago. This does not confirm anything is wrong.`,
           ),
         );
       }

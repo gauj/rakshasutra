@@ -1,6 +1,7 @@
 // Public entry point of the core package: re-exports the rules engine, alert building, scheduling and helpers.
 export * from "./types.js";
 export * from "./geo.js";
+export * from "./units.js";
 export * from "./engine.js";
 export * from "./sos.js";
 export * from "./report.js";

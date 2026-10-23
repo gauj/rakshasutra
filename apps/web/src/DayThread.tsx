@@ -1,6 +1,6 @@
 // The day as a thread of knots, newest first, built from the server's timeline and the current plan.
 import { useState } from "react";
-import { compass, fmtDist } from "@rakshasutra/core";
+import { compass, fmtDist, fmtMph } from "@rakshasutra/core";
 import type { TimelineSegment } from "@rakshasutra/core";
 import { clock12, moodOf, type State } from "./state";
 
@@ -30,7 +30,7 @@ function describe(seg: TimelineSegment, isNow: boolean, tz: number, concern: boo
     case "moving":
       return { ...base, cls: isNow ? "now" : "", what: `Moved ${fmtDist(seg.distanceM)} at a running or cycling pace`, more: `${seg.startPlace} to ${seg.endPlace}` };
     case "vehicle":
-      return { ...base, cls: `ride ${concern ? "look" : ""} ${isNow ? "now" : ""}`, what: `In a vehicle for ${fmtDist(seg.distanceM)}`, more: `${seg.avgKmh} km/h${dir}. ${seg.startPlace} to ${seg.endPlace}` };
+      return { ...base, cls: `ride ${concern ? "look" : ""} ${isNow ? "now" : ""}`, what: `In a vehicle for ${fmtDist(seg.distanceM)}`, more: `${fmtMph(seg.avgKmh)} mph${dir}. ${seg.startPlace} to ${seg.endPlace}` };
     case "no-signal":
       return { ...base, cls: `lost ${isNow ? "now" : ""}`, what: "No signal", more: `Last seen ${seg.startPlace}. A missing signal can be a flat battery or no coverage, not only danger.` };
   }

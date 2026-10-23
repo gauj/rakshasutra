@@ -57,7 +57,7 @@ export function SummaryPage({ st }: { st: State }) {
       {report && hasData && (
         <>
           <div className="stats">
-            <div className="stat s1"><b><CountUp value={report.distanceKm} decimals={1} /></b><span>km travelled</span></div>
+            <div className="stat s1"><b><CountUp value={Math.round((report.distanceKm / 1.609344) * 10) / 10} decimals={1} /></b><span>mi travelled</span></div>
             <div className="stat s2"><b><CountUp value={report.stays.length} /></b><span>{report.stays.length === 1 ? "place stayed at" : "places stayed at"}</span></div>
             <div className="stat s3"><b><CountUp value={report.incidents.length} /></b><span>{report.incidents.length === 1 ? "worry" : "worries"}</span></div>
             <div className="stat s4"><b><CountUp value={report.coveragePct} />%</b><span>signal coverage</span></div>

@@ -1,6 +1,6 @@
 // The alert card: what was noticed, what to do, and what is and is not known. Emergency numbers are shown, never dialled.
 import { useState } from "react";
-import type { Alert, HrSummary } from "@rakshasutra/core";
+import { fmtMi, fmtMph, type Alert, type HrSummary } from "@rakshasutra/core";
 import { clock12, moodOf, type State } from "./state";
 
 // Tiny heart-rate chart; the dashed line marks the 180 bpm limit. Needs at least two readings.
@@ -65,8 +65,8 @@ export function SosCard({ alert, st, cleared, onAck, onShare }: Props) {
   // Only facts we actually have; what is missing is listed separately under "What we do not know".
   const known: string[] = [];
   if (s.locationContext) known.push(`${s.dataFreshness === "live" ? "Now" : "Last seen"}: ${s.locationContext}`);
-  if (s.position) known.push(`Last signal ${s.position.ageMin} min ago${s.position.accuracyM ? `, accurate to about ${Math.round(s.position.accuracyM)} m` : ""}`);
-  known.push(s.motion === "still" || s.motion === "unknown" ? "Not moving at the last reading" : `Moving ${s.speedKmh} km/h${s.compass ? `, heading ${s.compass}` : ""}`);
+  if (s.position) known.push(`Last signal ${s.position.ageMin} min ago${s.position.accuracyM ? `, accurate to about ${Math.round(s.position.accuracyM * 3.28084)} ft` : ""}`);
+  known.push(s.motion === "still" || s.motion === "unknown" ? "Not moving at the last reading" : `Moving ${fmtMph(s.speedKmh)} mph${s.compass ? `, heading ${s.compass}` : ""}`);
   if (s.lastMovement) known.push(`Last movement ${s.lastMovement.ageMin} min ago${s.lastMovement.place ? `, near ${s.lastMovement.place}` : ""}`);
   if (s.hr) known.push(`Heart rate ${s.hr.latest} bpm, ${s.hr.trend}`);
 
@@ -157,9 +157,9 @@ export function SosCard({ alert, st, cleared, onAck, onShare }: Props) {
       <details className="more">
         <summary>Movement, heart rate, nearest help</summary>
         <div className="kv">
-          <div><b>{s.motion === "still" || s.motion === "unknown" ? "Still" : `${s.speedKmh} km/h`}</b><span>now{s.compass ? `, heading ${s.compass}` : ""}</span></div>
-          <div><b>{s.maxSpeed15mKmh} km/h</b><span>top speed, 15 min up to last signal</span></div>
-          <div><b>{s.distance3hKm} km</b><span>travelled in 3 hours</span></div>
+          <div><b>{s.motion === "still" || s.motion === "unknown" ? "Still" : `${fmtMph(s.speedKmh)} mph`}</b><span>now{s.compass ? `, heading ${s.compass}` : ""}</span></div>
+          <div><b>{fmtMph(s.maxSpeed15mKmh)} mph</b><span>top speed, 15 min up to last signal</span></div>
+          <div><b>{fmtMi(s.distance3hKm)} mi</b><span>travelled in 3 hours</span></div>
           <div><b>{s.device.battery ?? "n/a"}{s.device.battery !== undefined ? "%" : ""}</b><span>battery{s.device.batteryDrainPctPerHour ? `, down ${s.device.batteryDrainPctPerHour}% an hour` : ""}</span></div>
         </div>
         {s.hr && (
@@ -171,7 +171,7 @@ export function SosCard({ alert, st, cleared, onAck, onShare }: Props) {
         )}
         <p className="eyebrow">Nearest help</p>
         {s.nearestPlaces.map((p) => (
-          <div className="li" key={p.name}><span>{p.name}</span><span className="muted">{(p.distanceM / 1000).toFixed(1)} km</span></div>
+          <div className="li" key={p.name}><span>{p.name}</span><span className="muted">{(p.distanceM / 1609.344).toFixed(1)} mi</span></div>
         ))}
       </details>
       </div>

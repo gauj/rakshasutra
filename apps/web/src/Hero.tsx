@@ -1,4 +1,4 @@
-import type { Alert } from "@rakshasutra/core";
+import { fmtMph, type Alert } from "@rakshasutra/core";
 import { Beera, type BeeraMood } from "./Beera";
 import { Icon } from "./Icons";
 import { agoText, clock12, moodOf, type State } from "./state";
@@ -33,7 +33,7 @@ export function sentence(st: State, open?: Alert) {
     return { mood: "Hello", title: `Waiting for ${name}'s first check-in.`, sub: plan ? "Your plan is set, so we will not worry early." : `Tell your Bee when you expect ${name} somewhere, and confirm it here.` };
   }
   const walking = n && (n.motion === "walking" || n.motion === "moving");
-  const place = where ? `at ${where}` : walking ? `on the move (${n!.speedKmh} km/h)` : "somewhere new to us";
+  const place = where ? `at ${where}` : walking ? `on the move (${fmtMph(n!.speedKmh)} mph)` : "somewhere new to us";
   const done = st.plans.find((p) => p.status === "completed");
   const tail = plan ? `On plan: expected home by ${clock12(plan.expectedAt, tz)}.` : done ? `Home as planned (by ${clock12(done.expectedAt, tz)}).` : "No plan set for today.";
   const cleared = open ? " Back to normal after your earlier alert." : "";

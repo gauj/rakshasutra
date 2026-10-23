@@ -184,12 +184,12 @@ export function Landing({ st, open, view, onCloseBee }: Props) {
 // Today's totals shown on the Summary tile.
 function SummaryPreview({ st }: { st: State }) {
   const segs = st.day.timeline;
-  const km = Math.round(segs.reduce((a, s) => a + s.distanceM, 0) / 100) / 10;
+  const mi = Math.round(segs.reduce((a, s) => a + s.distanceM, 0) / 160.9344) / 10;
   const stops = segs.filter((s) => s.kind === "still" && s.to - s.from >= 10 * 60_000).length;
   if (!segs.length) return <p className="tile-hint">The story of the day starts with the first check-in</p>;
   return (
     <div className="tile-stats">
-      <div><b><CountUp value={km} decimals={1} /></b><span>km today</span></div>
+      <div><b><CountUp value={mi} decimals={1} /></b><span>mi today</span></div>
       <div><b><CountUp value={stops} /></b><span>{stops === 1 ? "stop" : "stops"}</span></div>
       <div><b><CountUp value={st.alerts.length} /></b><span>{st.alerts.length === 1 ? "alert" : "alerts"}</span></div>
     </div>

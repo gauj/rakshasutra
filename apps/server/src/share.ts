@@ -69,7 +69,7 @@ document.getElementById('sub').textContent='Shared by the parent. Expires '+new 
 var h='';if(d.child.description)h+='<div><b>Description:</b> '+esc(d.child.description)+'</div>';
 if(d.child.medical)h+='<div><b>Medical:</b> '+esc(d.child.medical)+'</div>';
 if(d.position){h+='<div><b>Last position:</b> '+d.position.lat.toFixed(5)+', '+d.position.lon.toFixed(5)+' ('+ago(d.now-d.position.ts)+')</div>';
-h+='<div><b>Movement:</b> '+(d.speedKmh>1?d.speedKmh+' km/h'+(d.compass?' heading '+d.compass:''):'not moving')+'</div>';}
+h+='<div><b>Movement:</b> '+(d.speedKmh>1?Math.round(d.speedKmh/1.609344)+' mph'+(d.compass?' heading '+d.compass:''):'not moving')+'</div>';}
 else h+='<div>No position yet.</div>';
 h+='<div><small>Automated tracking data. It may be out of date and has not been confirmed.</small></div>';
 document.getElementById('info').innerHTML=h;

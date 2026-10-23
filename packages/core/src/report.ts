@@ -1,3 +1,4 @@
+import { fmtMi, fmtMph } from "./units.js";
 /** Summarises a time window (distance, stays, alerts, coverage) and writes a plain-language narrative of it. */
 import { haversineM } from "./geo.js";
 import { Alert, ChildProfile, Ping } from "./types.js";
@@ -134,7 +135,7 @@ const fmtT = (ts: number, tz: number) => new Date(ts + tz * 60000).toISOString()
 /** Deterministic narrative. The server upgrades it with Amazon Bedrock when configured. */
 export function templateNarrative(r: Omit<WellbeingReport, "headline" | "narrative">, tzOffsetMin = 0): string {
   const parts: string[] = [];
-  parts.push(`Between ${fmtT(r.from, tzOffsetMin)} and ${fmtT(r.to, tzOffsetMin)}, ${r.childName} travelled about ${r.distanceKm} km (top speed ${r.maxSpeedKmh} km/h).`);
+  parts.push(`Between ${fmtT(r.from, tzOffsetMin)} and ${fmtT(r.to, tzOffsetMin)}, ${r.childName} travelled about ${fmtMi(r.distanceKm)} mi (top speed ${fmtMph(r.maxSpeedKmh)} mph).`);
   if (r.stays.length) {
     parts.push("Time spent: " + r.stays.map((s) => `${s.place} for ${s.minutes} min (${fmtT(s.from, tzOffsetMin)})`).join("; ") + ".");
   }

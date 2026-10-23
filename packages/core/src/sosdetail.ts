@@ -1,3 +1,4 @@
+import { fmtMi, fmtMph } from "./units.js";
 /** Text and summaries that fill an alert: place names, the recent timeline, heart-rate and battery trends, unknowns and messages. */
 import { bearingDeg, compass, haversineM } from "./geo.js";
 import { fmtClock } from "./schedule.js";
@@ -5,10 +6,11 @@ import { ChildProfile, DEFAULT_THRESHOLDS, HrSummary, Ping, SosPayload, Timeline
 
 type LatLon = { lat: number; lon: number };
 
-/** Short distance for people: rounded to 10 m under 950 m, otherwise kilometres. */
+/** Short distance for people, in US units: feet (to the nearest 50) under 1,000 ft, otherwise miles. */
 export function fmtDist(m: number): string {
-  if (m < 950) return `${Math.max(10, Math.round(m / 10) * 10)} m`;
-  return `${(m / 1000).toFixed(1)} km`;
+  const ft = m * 3.28084;
+  if (ft < 1000) return `${Math.max(50, Math.round(ft / 50) * 50)} ft`;
+  return `${(m / 1609.344).toFixed(1)} mi`;
 }
 
 /** "Inside Home" or "2.1 km E of Home": a place name a parent understands, not coordinates. */
@@ -107,11 +109,11 @@ export function describeSegment(s: TimelineSegment, tz: number): string {
     case "still":
       return /^\d.* of /.test(s.endPlace) ? `${span}: stopped, ${s.endPlace}` : `${span}: stayed at ${s.endPlace}`;
     case "walking":
-      return `${span}: walked ${fmtDist(s.distanceM)} (${s.avgKmh} km/h)${dir}, ${s.startPlace} to ${s.endPlace}`;
+      return `${span}: walked ${fmtDist(s.distanceM)} (${fmtMph(s.avgKmh)} mph)${dir}, ${s.startPlace} to ${s.endPlace}`;
     case "moving":
-      return `${span}: moved ${fmtDist(s.distanceM)} (${s.avgKmh} km/h, running or cycling pace)${dir}`;
+      return `${span}: moved ${fmtDist(s.distanceM)} (${fmtMph(s.avgKmh)} mph, running or cycling pace)${dir}`;
     case "vehicle":
-      return `${span}: travelled ${fmtDist(s.distanceM)} at vehicle speed (${s.avgKmh} km/h avg)${dir}, ${s.startPlace} to ${s.endPlace}`;
+      return `${span}: travelled ${fmtDist(s.distanceM)} at vehicle speed (${fmtMph(s.avgKmh)} mph avg)${dir}, ${s.startPlace} to ${s.endPlace}`;
     case "no-signal":
       return `${span}: no signal (last seen ${s.startPlace})`;
   }
@@ -219,8 +221,8 @@ export function buildEmergencyBrief(p: {
   if (profile.description) lines.push(`Description: ${sentence(profile.description)}`);
   if (profile.medical) lines.push(`Medical: ${sentence(profile.medical)}`);
   if (last) {
-    lines.push(`Last known location: ${last.lat.toFixed(5)}, ${last.lon.toFixed(5)}${last.accuracyM ? ` (accuracy about ${Math.round(last.accuracyM)} m)` : ""}, ${context ?? ""}. Seen at ${fmtClock(last.ts, tz)}, ${Math.round(ageMin)} minutes ago.`);
-    lines.push(motion === "still" || motion === "unknown" ? "The child was not moving at the last reading." : `The child was moving at ${speedKmh} km/h${compassDir ? ` heading ${compassDir}` : ""}.`);
+    lines.push(`Last known location: ${last.lat.toFixed(5)}, ${last.lon.toFixed(5)}${last.accuracyM ? ` (accuracy about ${Math.round(last.accuracyM * 3.28084)} ft)` : ""}, ${context ?? ""}. Seen at ${fmtClock(last.ts, tz)}, ${Math.round(ageMin)} minutes ago.`);
+    lines.push(motion === "still" || motion === "unknown" ? "The child was not moving at the last reading." : `The child was moving at ${fmtMph(speedKmh)} mph${compassDir ? ` heading ${compassDir}` : ""}.`);
   } else {
     lines.push("No location is available.");
   }
@@ -245,7 +247,7 @@ export function buildLongText(s: Omit<SosPayload, "longText">, tz: number): stri
   } else L.push("- No location available.");
   L.push("");
   L.push("MOVEMENT");
-  L.push(s.motion === "still" || s.motion === "unknown" ? "- Not moving." : `- ${s.speedKmh} km/h${s.compass ? ` heading ${s.compass}` : ""}. Top speed in the 15 min up to the last fix: ${s.maxSpeed15mKmh} km/h.`);
+  L.push(s.motion === "still" || s.motion === "unknown" ? "- Not moving." : `- ${fmtMph(s.speedKmh)} mph${s.compass ? ` heading ${s.compass}` : ""}. Top speed in the 15 min up to the last fix: ${fmtMph(s.maxSpeed15mKmh)} mph.`);
   if (s.predicted10Min) L.push(`- If the same heading and speed continue, about ${s.predicted10Min.lat.toFixed(4)}, ${s.predicted10Min.lon.toFixed(4)} in 10 min.`);
   if (s.lastMovement) L.push(`- Last movement ${s.lastMovement.ageMin} min ago${s.lastMovement.place ? ` near ${s.lastMovement.place}` : ""}.`);
   if (s.hr) {
@@ -258,7 +260,7 @@ export function buildLongText(s: Omit<SosPayload, "longText">, tz: number): stri
     L.push(`HEARD: "${s.lastVoiceFlag.snippet}"`);
   }
   L.push("");
-  L.push(`LAST 3 HOURS (${s.distance3hKm} km travelled)`);
+  L.push(`LAST 3 HOURS (${fmtMi(s.distance3hKm)} mi travelled)`);
   s.timeline3h.forEach((seg) => L.push(`- ${describeSegment(seg, tz)}`));
   L.push("");
   L.push("DEVICE");

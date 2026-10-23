@@ -1,3 +1,4 @@
+import { fmtMi, fmtMph } from "./units.js";
 /** Builds the alert payload (SosPayload): headline, where, why, what is unknown and what the parent can do. */
 import { compass, destination, haversineM } from "./geo.js";
 import {
@@ -94,7 +95,7 @@ export function buildSos({ profile, ev, pings, voice, places }: Args): SosPayloa
     `RakshaSutra ${ev.tier.toUpperCase()}: ${headline}.`,
     last ? `Last seen ${Math.round(ageMin)} min ago at ${last.lat.toFixed(4)},${last.lon.toFixed(4)}.` : "",
     s.motion === "vehicle" || s.motion === "moving" || s.motion === "walking"
-      ? `Moving ${speedKmh} km/h${dir ? " " + dir : ""}.`
+      ? `Moving ${fmtMph(speedKmh)} mph${dir ? " " + dir : ""}.`
       : `Not moving.`,
     last?.hr !== undefined ? `HR ${last.hr} bpm.` : "",
     mapUrl ?? "",
