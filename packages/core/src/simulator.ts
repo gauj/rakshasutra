@@ -272,7 +272,7 @@ export function buildScenario(name: ScenarioName, childId = DEMO_CHILD_ID): Scen
       { t: at(15, 0), label: "Reaches CTE safely" },
       { t: at(17, 0), label: "Late pick-up, keep him at school" },
       { t: at(17, 13), label: "Leaves school: heads-up" },
-      { t: at(17, 58), label: "Home, safe" },
+      { t: at(18, 0), label: "Home, safe" },
     ];
     return { name, title: "A school day with Bee: kept safe from 9 to 6", startTs, endTs, defaultSpeed: 240, events, scripted: true, chapters };
   }

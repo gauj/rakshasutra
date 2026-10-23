@@ -25,7 +25,7 @@ Say this plainly once, near the start: **the guardian's Bee is live; the child's
 | **1:35** | "At 5, I'm running late. I ask Bee to keep him safe at school and not wandering." | Click **5:00 PM Late pick-up, keep him at school**. The Bee page shows the second note. |
 | **1:50** | "He walks off campus. I'm told at once, calmly, with the reason." | Click **5:11 PM Leaves school: heads-up**. Beera turns serious. Open **Check-in**: "Left Liberty HS while you asked us to keep watch". Point at **What we know / What we do not know** and "not a confirmed emergency". |
 | **2:15** | "The alert never claims an emergency. Emergency numbers are display-only; the app never dials them." | Scroll the alert to the steps ("Try Adam first"). |
-| **2:25** | "He's picked up, and home by six. The story ends well." | Click **5:58 PM Home, safe**. Beera cheers: "Adam is home!" |
+| **2:25** | "He's picked up, and home by six. The story ends well." | Click **6:00 PM Home, safe**. Beera cheers: "Adam is home!" |
 | **2:35** | "Built in TypeScript on the Bee CLI. 90 unit tests, an AWS CDK stack, and an open-source library for Bee's live speech." | Show the GitHub repo page for two seconds: the README banner. |
 | **2:50** | "RakshaSutra: a thread of care." | The logo. End. |
 
