@@ -18,6 +18,7 @@
     "e2e:real": "node scripts/e2e-real.mjs",
     "sim:serve": "node scripts/sim.mjs serve",
     "sim": "node scripts/sim.mjs",
-    "demo": "node scripts/demo.mjs"
+    "demo": "node scripts/demo.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs"
   }
 }
