@@ -1,6 +1,7 @@
 import { DATA_DIR, familyExists, loadFamily, newFamily, saveFamily } from "./family.js";
 
 // Usage: npm run setup:real -- --name Adam --age 13 [--tz -300] [--force]
+//        npm run setup:real -- --show     (print the family code again)
 const args = process.argv.slice(2);
 const opt = (k: string) => {
   const i = args.indexOf(`--${k}`);
@@ -11,9 +12,20 @@ const name = opt("name");
 const age = Number(opt("age"));
 const tz = opt("tz") !== undefined ? Number(opt("tz")) : -300;
 
+if (args.includes("--show")) {
+  const f = familyExists() ? loadFamily() : undefined;
+  if (!f) {
+    console.error(`Nothing is set up yet in ${DATA_DIR}. Run: npm run setup:real -- --name Adam --age 13`);
+    process.exit(1);
+  }
+  console.log(`\n  Family code for ${f.child.name} (type this into the app to sign in):\n\n      ${f.secrets.parentToken}\n`);
+  process.exit(0);
+}
+
 if (familyExists() && !args.includes("--force")) {
   const f = loadFamily()!;
   console.log(`Already set up for ${f.child.name}. Settings are in ${DATA_DIR}`);
+  console.log("To see the family code again, run: npm run setup:real -- --show");
   console.log("To start over (this replaces the access codes), run again with --force.");
   process.exit(0);
 }
